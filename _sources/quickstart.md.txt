@@ -1,0 +1,575 @@
+# Quick Start
+TQL is a scalable data processing engine for machine learning applications.  In this article we will learn to write a TQL query that prepares data for a machine learning application, trains a ML model, then uses TQL to make batch predictions.
+
+## Demo Projects
+For this tutorial we will be using TQL's built in demo projects, which come automatically installed with TQL and are provided to help learn TQL before adding your own data.  For this guide we will use demo project 4, also known as **Lethe**.  Lethe represents a collection of advertising funnel data from three time series: 
+- **bids** - online advertising auctions.  Some of those actions were won, producing impressions.
+- **activity** - website activity, including page visits, product views, and purchases.  We hypothesize that some of this site activity was driven by our advertising campaign. 
+- **user** - a set of user demographic information (age, etc)
+
+We will be using Lethe in this guide to prepare a dataset for machine learning that attempts to predict the effect of showing ads on purchases.  
+
+## Importing TQL
+Always start your work by importing TQL into your namespace.  If a TQL backend is not yet running, one will be automatically started.  Learn more about configuring the TQL backend [here](Configuration.html).
+
+
+```python
+from noumena.tql import *
+```
+
+    ------------------------------------------------------------------
+               Version: 20.1.16-SNAPSHOT
+     Version Timestamp: 2021-07-21 17:34:23
+           Version Age: 7 days, 20 hours, 20 minutes
+       Filesystem Root: /Users/zkozick/.noumena/files
+     Working Directory: /Users/zkozick/.noumena
+    Configuration File: /Users/zkozick/.noumena/noumena_conf.yml
+           Api Gateway: http://localhost:9000
+        Service Status: Icarus: ONLINE, Daedalus: ONLINE
+        Service Uptime: 1 days, 1 hours, 55 minutes, 59 seconds
+    ------------------------------------------------------------------
+
+
+## Writing Your First Query
+TQL provides a simple SQL-like interface in Python for writing queries that produce datasets.  Queries always start with the `select()` function, usually is followed by a `from_events` clause.  There are also other common SQL-like interfaces such as `where()` and `limit()`.  Lets start by selecting all the bid attributes:
+
+
+```python
+select('type', 'bid.*').from_events(4).limit(5)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>bid_ad_size</th>
+      <th>bid_bid</th>
+      <th>bid_event_time</th>
+      <th>bid_ghosted</th>
+      <th>bid_request_id</th>
+      <th>bid_user_id</th>
+      <th>bid_won</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>user</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>bid</td>
+      <td>big</td>
+      <td>1.0</td>
+      <td>2021-01-02 00:02:36</td>
+      <td>false</td>
+      <td>r13260</td>
+      <td>u252</td>
+      <td>true</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>bid</td>
+      <td>big</td>
+      <td>1.0</td>
+      <td>2021-01-02 00:16:41</td>
+      <td>false</td>
+      <td>r13376</td>
+      <td>u252</td>
+      <td>true</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>bid</td>
+      <td>small</td>
+      <td>1.0</td>
+      <td>2021-01-02 00:30:55</td>
+      <td>false</td>
+      <td>r13509</td>
+      <td>u252</td>
+      <td>true</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>activity</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+</div><i>query produced 5 rows x 8 columns in 0.32 seconds</i><br><br>
+
+
+
+Notice that some of the rows are empty for bid.  This is because some of the timeline events are not bids, but other types of events.  As you can see in the above result set, the type of each output row can be determined by referencing the special attribute `type`.  
+
+Lets start building up our machine learning dataset query by selecting a few attributes of the bid time series.  Event attributes are addressable by using `timeseries_name`.`attribute_name` syntax, for example `bid.ad_size`.  Lets also exclude non-bid events from our query using a `where()` clause:
+
+
+```python
+select('bid.ad_size', 'bid.bid', 'bid.ghosted', 'bid.won').from_events(4).where('type == "bid"').limit(5)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+      <th>_c2</th>
+      <th>_c3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>big</td>
+      <td>1.0</td>
+      <td>false</td>
+      <td>true</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>big</td>
+      <td>1.0</td>
+      <td>false</td>
+      <td>true</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>small</td>
+      <td>1.0</td>
+      <td>false</td>
+      <td>true</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>small</td>
+      <td>1.0</td>
+      <td>false</td>
+      <td>true</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>big</td>
+      <td>1.0</td>
+      <td>false</td>
+      <td>true</td>
+    </tr>
+  </tbody>
+</table>
+</div><i>query produced 5 rows x 4 columns in 0.56 seconds</i><br><br>
+
+
+
+Notice that every row now has non-null values, since every row in the result set is from a bid event.
+
+## The TQL Expression Language
+The strings passed to `select()` are actually TQL Expressions.  The Expression Language provides a susinct, efficient way of expressing a transformation from a time series event object such as bid to a piece of output data, like ad size.  This process, often referred to as data cleaning or data wrangling, can be extremely time consuming and is one of the things that TQL aims to make easy.  For example, lets make some simple transformations:
+1. perhaps our time series data contains a mix of lower and upper-case ad sizes.  We can normalize them using the simple expression language function `UPPER()`.  
+2. we also know that bids were in dollars, but we wish to rescale them into cents, by multiplying them by 100:
+
+
+```python
+select(
+  'UPPER(bid.ad_size)', 
+  'bid.bid * 100', 
+  'bid.ghosted', 
+  'bid.won'
+).from_events(4).where('type == "bid"').limit(5)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+      <th>_c2</th>
+      <th>_c3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>BIG</td>
+      <td>100.0</td>
+      <td>false</td>
+      <td>true</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>BIG</td>
+      <td>100.0</td>
+      <td>false</td>
+      <td>true</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>SMALL</td>
+      <td>100.0</td>
+      <td>false</td>
+      <td>true</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>SMALL</td>
+      <td>100.0</td>
+      <td>false</td>
+      <td>true</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>BIG</td>
+      <td>100.0</td>
+      <td>false</td>
+      <td>true</td>
+    </tr>
+  </tbody>
+</table>
+</div><i>query produced 5 rows x 4 columns in 0.46 seconds</i><br><br>
+
+
+
+### Timeline Expressions
+Because of TQL's unique data processing model, the entire context of the timeline is available to each event at extraction time, using the special variable `timeline`.  Each timeline has an id, accessible by `timeline.id`, as well as an array of events, accessible by `timeline.events`.  Through the expression language, we can easily express complex operations:
+
+
+```python
+select(
+  'timeline.id', #the id of each timeline 
+  'size(timeline.events)', #the total number of events on the timeline
+  'timeline.events[0].type' #the type of the first event
+).from_events(4).limit(3)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+      <th>_c2</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>u252</td>
+      <td>548.0</td>
+      <td>user</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>u252</td>
+      <td>548.0</td>
+      <td>user</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>u252</td>
+      <td>548.0</td>
+      <td>user</td>
+    </tr>
+  </tbody>
+</table>
+</div><i>query produced 3 rows x 3 columns in 0.3 seconds</i><br><br>
+
+
+
+It starts toget more interesting when you use `MAP` and `FILTER` operations to compare the timeline events to the current event.  Say, for example, we wanted to create a dataset that for each purchase, counted the number of bid events that occured prior to that purchase.  This would be quite a difficult operation to perform with SQL, but with TQL it's easy:
+
+
+```python
+select(
+  'type', #the type of the row: each row in this result set will be of type 'activity'
+  'activity.conversion', #the activity type: each row in this result set will be of conversion 'purchase'
+  'DATETIME(timestamp)', #the timestamp of this activity
+  'SIZE(FILTER(timeline.events, (x) -> x.type == "bid" and x.timestamp < timestamp))' #the number of bids before each purchase
+).from_events(4).where('type == "activity" and activity.conversion == "purchase"').limit(10)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+      <th>_c2</th>
+      <th>_c3</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>activity</td>
+      <td>purchase</td>
+      <td>2021-01-04 22:12:46</td>
+      <td>46.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>activity</td>
+      <td>purchase</td>
+      <td>2021-01-06 04:27:21</td>
+      <td>55.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>activity</td>
+      <td>purchase</td>
+      <td>2021-01-06 13:12:13</td>
+      <td>64.0</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>activity</td>
+      <td>purchase</td>
+      <td>2021-01-12 14:56:17</td>
+      <td>254.0</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>activity</td>
+      <td>purchase</td>
+      <td>2021-01-12 15:52:32</td>
+      <td>259.0</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>activity</td>
+      <td>purchase</td>
+      <td>2021-01-01 02:34:59</td>
+      <td>8.0</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>activity</td>
+      <td>purchase</td>
+      <td>2021-01-01 16:19:23</td>
+      <td>36.0</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>activity</td>
+      <td>purchase</td>
+      <td>2021-01-08 15:57:31</td>
+      <td>116.0</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>activity</td>
+      <td>purchase</td>
+      <td>2021-01-10 12:59:08</td>
+      <td>173.0</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>activity</td>
+      <td>purchase</td>
+      <td>2021-01-10 15:56:29</td>
+      <td>176.0</td>
+    </tr>
+  </tbody>
+</table>
+</div><i>query produced 10 rows x 4 columns in 0.36 seconds</i><br><br>
+
+
+
+## Column Naming and Typing
+In TQL, columns can be assigned names, and can be cast to different machine learning types, and will be treated differently by the query engine during extraction.  TQL provides the following casting functions:
+- `label(expr, name)`: identifies the column as the ML result set label.  All values of this column are assumed to be numeric.
+- `weight(expr, name)`: identifies the column as the ML result set weight.  All values of this column are assumed to be numeric.  
+- `tag(expr, name)`: tag is a unique identifier for each row.  While not required, it is encouraged that you include a tag for debugging purposes.
+- `categorical(expr, name)`: 
+
+
+```python
+select(
+  label('bid.bid', name='bid_amt'),
+  weight('1.0', name='constant_weight'), 
+  tag('id', 'event_id'), 
+  categorical('COALESCE(UPPER(bid.ad_size), "")'),
+  numerical('SIZE(FILTER(timeline.events,  (x) -> x.type == "bid" and x.timestamp < timestamp))', 'prior_bid_count'),
+  
+).from_events(4).where('type == "bid"').limit(5)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>bid_amt</th>
+      <th>constant_weight</th>
+      <th>event_id</th>
+      <th>_c3</th>
+      <th>prior_bid_count</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>51539616375</td>
+      <td>BIG</td>
+      <td>0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>51539616491</td>
+      <td>BIG</td>
+      <td>1</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>51539616624</td>
+      <td>SMALL</td>
+      <td>2</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>51539616852</td>
+      <td>SMALL</td>
+      <td>3</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>1.0</td>
+      <td>1.0</td>
+      <td>51539617100</td>
+      <td>BIG</td>
+      <td>4</td>
+    </tr>
+  </tbody>
+</table>
+</div><i>query produced 5 rows x 5 columns in 0.44 seconds</i><br><br>
+
+

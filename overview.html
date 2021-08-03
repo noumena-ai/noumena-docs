@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Overview &#8212; noumena-tql  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/noumena.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/noumena.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="TQL Terminology and Data Processing Model" href="concepts.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="#">
+          Noumena TQL</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="#">Overview</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Programming Guides <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">   Overview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#what-is-tql">What is TQL?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#features">Features:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#data-processing-model">Data Processing Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#installation">Installation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#where-to-next">Where To Next?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="concepts.html">   Key Concepts and Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#timeseries">TimeSeries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#timelines">Timelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#query">Query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#resultset">ResultSet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#metrics">Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#sampling">Sampling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">   Quick Start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#demo-projects">Demo Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#importing-tql">Importing TQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#writing-your-first-query">Writing Your First Query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#the-tql-expression-language">The TQL Expression Language</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#column-naming-and-typing">Column Naming and Typing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="importing-data.html">   Importing Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expression-language.html">   Expression Language</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#literals">Literals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#event-attributes">Event Attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#booleans-and-logical-operators">Booleans and Logical Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#math-functions">Math Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#statistics-random-numbers-and-hashing">Statistics, Random Numbers, and Hashing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#string-manipulation">String Manipulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#date-time-manipulation">Date/Time Manipulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#array-manipulation">Array Manipulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#local-variables-and-multi-statement-expressions">Local Variables and Multi-Statement Expressions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#timeline-scanning-operations">Timeline Scanning Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#the-predict-function">The PREDICT Function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#the-set-property-function">The SET_PROPERTY Function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#comments">Comments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#user-defined-functions-udfs">User Defined Functions (UDFs)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#compile-and-runtime-error-handling">Compile and Runtime Error Handling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#tql-expression-debugger">TQL Expression Debugger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="expression-language.html#where-to-next">Where To Next?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="writing-queries.html">   Writing Queries</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="writing-queries.html#the-downsample-by-operator">The downsample_by() Operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="writing-queries.html#the-options-operator">The options() Operator</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="user-defined-functions.html">   User Defined Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user-defined-functions.html#table-level-udfs">Table-level UDFs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-defined-functions.html#query-level-udfs">Query-level UDFs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-defined-functions.html#inline-expression-udfs">Inline expression UDFs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">   Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#the-noumena-tql-configuration-file">The Noumena TQL Configuration File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#modifying-the-configuration">Modifying the Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#configuration-properties">Configuration Properties:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#install-additional-noumena-jupyter-notebook-content">Install Additional Noumena Jupyter Notebook Content</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="tex2jax_ignore mathjax_ignore section" id="overview">
+<h1>Overview<a class="headerlink" href="#overview" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="what-is-tql">
+<h2>What is TQL?<a class="headerlink" href="#what-is-tql" title="Permalink to this headline">¶</a></h2>
+<p>TQL, or <strong>Timeline Query Language</strong>, is a data processing engine for preparing time series data for machine learning applications.  Using a simple Python interface and custom DSL expression language, TQL makes it simple for a data scientist or engineer to write robust, scalable, production-ready ETLs to prepare data for model training.  TQL excels at efficently extracting complex <a class="reference external" href="https://www.investopedia.com/terms/l/longitudinaldata.asp">longtidunal</a> features, and also provides a easy-to-use set of APIs to make deploying ML Models to production for batch or realtime scoring.</p>
+</div>
+<div class="section" id="features">
+<h2>Features:<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Simple, intuitive Python query interface usable by any data scientst or engineer that can write SQL</p></li>
+<li><p>Queries are translated directly to Java bytecode for execution for maximum performance</p></li>
+<li><p>Extracting longitudinal and panel datasets from time series is data fast and easy</p></li>
+<li><p>TQL’s fast, in-memory query engine is optimized for interactive workflows in Jupyter Notebooks</p></li>
+<li><p>TQL’s distributed query engine effortlessly scales your queries to large workloads</p></li>
+<li><p>Direct support for batch and realtime scoring of trained ML models</p></li>
+</ul>
+</div>
+<div class="section" id="data-processing-model">
+<h2>Data Processing Model<a class="headerlink" href="#data-processing-model" title="Permalink to this headline">¶</a></h2>
+<p>TQL first creates <strong>timelines</strong> from one or multiple time series sharing a common identity, such as user_id.  It then extracts dataframes by extracting attributes from the events, then further transforming those attributes into machine learning features using a custom DSL (domain-specific language).<br />
+<img alt="" src="https://lh5.googleusercontent.com/8DKADTmvm2395GHBPeMWepSgddW2hNjHkqtPLUx5To1z62wdNK3YxHhuMUdaXnz0oL9MHnspi8SzEE6SCoUhUGR1Xau39XY05GS5Gm4zvPjCUrZKfJX7TiX9ATyOV3-trIi1qQaKzgY" /></p>
+<p>This data processing model is a bit different than traditional SQL, but is designed to make the most difficult parts of time-aggregated data transformations simple and easy to express by the data scientist, yet fast and performant in production.  To get the most out of TQL, we encourage you to read the <a class="reference internal" href="concepts.html"><span class="doc std std-doc">Key Concepts and Architecture</span></a> guide before diving into writing your first TQL queries.</p>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="obtaining-a-license-key">
+<h3>Obtaining a license key<a class="headerlink" href="#obtaining-a-license-key" title="Permalink to this headline">¶</a></h3>
+<p>TQL is currently being offered for preview in a private beta.  Please click <a class="reference external" href="#TODO">here</a> to request
+to be included in the Beta.</p>
+</div>
+<div class="section" id="prerequisites">
+<h3>Prerequisites<a class="headerlink" href="#prerequisites" title="Permalink to this headline">¶</a></h3>
+<p>At a minimum, we recommend the following for compatibility with TQL:</p>
+<ul class="simple">
+<li><p>Python 3.6+ (get it <a class="reference external" href="https://www.python.org/downloads/">here</a>)</p></li>
+<li><p>Java 8+ (install instructions <a class="reference external" href="https://github.com/noumena-ai/noumena/wiki/Noumena-Installation-Guide#installing-java-18">here</a>)</p></li>
+<li><p>Snappy Compression Library (install instructions <a class="reference external" href="#TODO">here</a>)</p></li>
+</ul>
+<div class="alert alert-block alert-info">
+<b>Tip:</b> We strongly recommend you use a python virtual environment manager to isolate the installation
+of TQL from your other Python applications.
+</div>
+</div>
+<div class="section" id="installing">
+<h3>Installing<a class="headerlink" href="#installing" title="Permalink to this headline">¶</a></h3>
+<p>Install Noumena using your package manager of choice, such as <a class="reference external" href="https://pip.pypa.io/en/stable/">pip</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">noumena</span> <span class="o">--</span><span class="n">extra</span><span class="o">-</span><span class="n">index</span><span class="o">-</span><span class="n">url</span><span class="o">=</span><span class="p">[</span><span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="p">[</span><span class="n">user</span><span class="p">]:[</span><span class="n">pw</span><span class="p">]</span><span class="nd">@pip</span><span class="o">.</span><span class="n">nanigans</span><span class="o">.</span><span class="n">com</span><span class="p">]</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="where-to-next">
+<h2>Where To Next?<a class="headerlink" href="#where-to-next" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="programming-guides">
+<h3>Programming Guides:<a class="headerlink" href="#programming-guides" title="Permalink to this headline">¶</a></h3>
+<div class="toctree-wrapper compound">
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">   Overview</a></li>
+<li class="toctree-l1"><a class="reference internal" href="concepts.html">   Key Concepts and Architecture</a></li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">   Quick Start</a></li>
+<li class="toctree-l1"><a class="reference internal" href="importing-data.html">   Importing Data</a></li>
+<li class="toctree-l1"><a class="reference internal" href="expression-language.html">   Expression Language</a></li>
+<li class="toctree-l1"><a class="reference internal" href="writing-queries.html">   Writing Queries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="user-defined-functions.html">   User Defined Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">   Configuration</a></li>
+</ul>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+<div id="sourcelink">
+  <a href="_sources/overview.md.txt"
+     rel="nofollow">Source</a>
+</div>
+      
+    </p>
+    <p>
+        &copy; Copyright Nanigans, 2021.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

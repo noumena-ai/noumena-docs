@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>The TQL Expression Language &#8212; noumena-tql  documentation</title>
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/noumena.css" />
+    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script src="_static/jquery.js"></script>
+    <script src="_static/underscore.js"></script>
+    <script src="_static/doctools.js"></script>
+    <script src="_static/noumena.js"></script>
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Writing Queries" href="writing-queries.html" />
+    <link rel="prev" title="Importing Data Into TQL" href="importing-data.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default navbar-fixed-top">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="overview.html">
+          Noumena TQL</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="overview.html">Overview</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="overview.html">Programming Guides <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="overview.html">   Overview</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="overview.html#what-is-tql">What is TQL?</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#features">Features:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#data-processing-model">Data Processing Model</a></li>
+<li class="toctree-l2"><a class="reference internal" href="overview.html#installation">Installation</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="overview.html#where-to-next">Where To Next?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="concepts.html">   Key Concepts and Architecture</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#timeseries">TimeSeries</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#timelines">Timelines</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#query">Query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#resultset">ResultSet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#metrics">Metrics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="concepts.html#sampling">Sampling</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">   Quick Start</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#demo-projects">Demo Projects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#importing-tql">Importing TQL</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#writing-your-first-query">Writing Your First Query</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#the-tql-expression-language">The TQL Expression Language</a></li>
+<li class="toctree-l2"><a class="reference internal" href="quickstart.html#column-naming-and-typing">Column Naming and Typing</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="importing-data.html">   Importing Data</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">   Expression Language</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#literals">Literals</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#event-attributes">Event Attributes</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#booleans-and-logical-operators">Booleans and Logical Operators</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#math-functions">Math Functions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#statistics-random-numbers-and-hashing">Statistics, Random Numbers, and Hashing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#string-manipulation">String Manipulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#date-time-manipulation">Date/Time Manipulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#array-manipulation">Array Manipulation</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#local-variables-and-multi-statement-expressions">Local Variables and Multi-Statement Expressions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#timeline-scanning-operations">Timeline Scanning Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-predict-function">The PREDICT Function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#the-set-property-function">The SET_PROPERTY Function</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#comments">Comments</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#user-defined-functions-udfs">User Defined Functions (UDFs)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#compile-and-runtime-error-handling">Compile and Runtime Error Handling</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#tql-expression-debugger">TQL Expression Debugger</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#where-to-next">Where To Next?</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="writing-queries.html">   Writing Queries</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="writing-queries.html#the-downsample-by-operator">The downsample_by() Operator</a></li>
+<li class="toctree-l2"><a class="reference internal" href="writing-queries.html#the-options-operator">The options() Operator</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="user-defined-functions.html">   User Defined Functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="user-defined-functions.html#table-level-udfs">Table-level UDFs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-defined-functions.html#query-level-udfs">Query-level UDFs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="user-defined-functions.html#inline-expression-udfs">Inline expression UDFs</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="configuration.html">   Configuration</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#the-noumena-tql-configuration-file">The Noumena TQL Configuration File</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#modifying-the-configuration">Modifying the Configuration</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#configuration-properties">Configuration Properties:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="configuration.html#install-additional-noumena-jupyter-notebook-content">Install Additional Noumena Jupyter Notebook Content</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="tex2jax_ignore mathjax_ignore section" id="the-tql-expression-language">
+<h1>The TQL Expression Language<a class="headerlink" href="#the-tql-expression-language" title="Permalink to this headline">¶</a></h1>
+<p>The expression language is the core of TQL’s data processing engine.  Expressions are written as Python strings and express a one-to-one transformation between an input timeline event object and a piece of output data.  These transformations form the building blocks of all TQL data processing queries.</p>
+<p>The language has strong syntactic similarities to SQL (basic functions, record-level structure) and Python (variables, list operations/aggregations, lambda/inline functions, user-defined functions). However, the expression language has several advantages:</p>
+<ul class="simple">
+<li><p><strong>Performant</strong>: TQL Expressions are compiled into Java byte code and hence, are very fast.</p></li>
+<li><p><strong>Lazily Evaluated</strong>: TQL Expressions are applied directly to raw timelines and events at query time, meaning all datasets are dynamically extracted from Timelines, eliminating the need for hard-to-maintain ETL pipelines.</p></li>
+<li><p><strong>Built for ML Model Evaluation</strong>: Trained ML Models deployed using TQL also store all the expressions expressions used to transform raw events into the training dataset, meaning feature extraction at scoring time is already built into the model.</p></li>
+</ul>
+<p>TQL Expressions only exist in the context of a project and query.  For this guide, we will the demo project <strong>lethe</strong> (id=4) to learn the language.  Lethe represents a typical online advertising funnel, with a set of online ad auctions <code class="docutils literal notranslate"><span class="pre">bid</span></code>, a set of website activity logs  <code class="docutils literal notranslate"><span class="pre">activity</span></code>, and static user demographics <code class="docutils literal notranslate"><span class="pre">user</span></code>.  Each Timeline represents the total of all observed events for a particular user.  For this guide we will be manipulating data primarily from the <code class="docutils literal notranslate"><span class="pre">bid</span></code> timeseries.</p>
+<p>Further reference:
+<span class="xref myst"><strong>Expression language cheat sheet</strong></span>,  and the full <span class="xref myst"><strong>expression function reference</strong></span></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">noumena.tql</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>-------------------------------------------------------------------
+           Version: 20.1.16-SNAPSHOT
+ Version Timestamp: 2021-07-21 17:34:23
+       Version Age: 11 days, 22 hours, 42 minutes, 37 seconds
+   Filesystem Root: /Users/zkozick/.noumena/files
+ Working Directory: /Users/zkozick/.noumena
+Configuration File: /Users/zkozick/.noumena/noumena_conf.yml
+       Api Gateway: http://localhost:9000
+    Service Status: Icarus: ONLINE, Daedalus: ONLINE
+    Service Uptime: 5 days, 4 hours, 18 minutes, 36 seconds
+-------------------------------------------------------------------
+</pre></div>
+</div>
+<div class="section" id="literals">
+<h2>Literals<a class="headerlink" href="#literals" title="Permalink to this headline">¶</a></h2>
+<p>TQL accepts string, boolean, integer, decimal, array, and null literals.  For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;&quot;Hello World!&quot;&#39;</span><span class="p">,</span> 
+	<span class="mi">1</span><span class="p">,</span> 
+	<span class="mf">1.3</span><span class="p">,</span> 
+	<span class="kc">True</span><span class="p">,</span>
+	<span class="s2">&quot;[1,2,3,4]&quot;</span><span class="p">,</span>
+	<span class="kc">None</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>_c0             _c1    _c2  _c3    _c4        _c5
+------------  -----  -----  -----  ---------  -----
+Hello World!      1    1.3  true   [1,2,3,4]
+Hello World!      1    1.3  true   [1,2,3,4]
+Hello World!      1    1.3  true   [1,2,3,4]
+</pre></div>
+</div>
+</div>
+<div class="section" id="event-attributes">
+<h2>Event Attributes<a class="headerlink" href="#event-attributes" title="Permalink to this headline">¶</a></h2>
+<p>In TQL expressions, attributes of timeline events are addressable as variables.  For example, Lethe is composed of the <code class="docutils literal notranslate"><span class="pre">bid</span></code> timeseries, which contains the attributes <code class="docutils literal notranslate"><span class="pre">ad_size</span></code>, <code class="docutils literal notranslate"><span class="pre">bid</span></code>, <code class="docutils literal notranslate"><span class="pre">event_time</span></code>, <code class="docutils literal notranslate"><span class="pre">ghosted</span></code>, <code class="docutils literal notranslate"><span class="pre">request_id</span></code>, <code class="docutils literal notranslate"><span class="pre">user_id</span></code>, and <code class="docutils literal notranslate"><span class="pre">won</span></code>.  These attributes are directly selectable using the expression language as variables, for example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;bid.ad_size&#39;</span><span class="p">,</span> 
+	<span class="s1">&#39;bid.bid&#39;</span><span class="p">,</span> 
+	<span class="s1">&#39;bid.ghosted&#39;</span><span class="p">,</span> 
+	<span class="s1">&#39;bid.request_id&#39;</span><span class="p">,</span> 
+	<span class="s1">&#39;bid.user_id&#39;</span><span class="p">,</span> 
+	<span class="s1">&#39;bid.won&#39;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>_c0      _c1  _c2    _c3     _c4    _c5
+-----  -----  -----  ------  -----  -----
+
+big        1  false  r13260  u252   true
+big        1  false  r13376  u252   true
+</pre></div>
+</div>
+</div>
+<div class="section" id="booleans-and-logical-operators">
+<h2>Booleans and Logical Operators<a class="headerlink" href="#booleans-and-logical-operators" title="Permalink to this headline">¶</a></h2>
+<p>The expression language contains the case-insensitive primitives <code class="docutils literal notranslate"><span class="pre">true</span></code> and <code class="docutils literal notranslate"><span class="pre">false</span></code>. Non-null, non-empty, non-zero values are also considered “truthy” and will be intepreted as true in a boolean context, such as in a where clause, The expression language has the native boolean operators <code class="docutils literal notranslate"><span class="pre">AND</span></code> and <code class="docutils literal notranslate"><span class="pre">OR</span></code> to express compound conditionals.  These may be used in isolation, or in conjunction with the <code class="docutils literal notranslate"><span class="pre">IF()</span></code> function to emit conditional values in columns.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;true&#39;</span><span class="p">,</span> <span class="c1">#primitives of true</span>
+	<span class="s1">&#39;FaLsE&#39;</span><span class="p">,</span> <span class="c1">#case insensitive primitives</span>
+	<span class="s1">&#39;1 OR &quot;non-empty string!&quot;&#39;</span><span class="p">,</span> <span class="c1"># &quot;truthy&quot; values with compound conditionals</span>
+	<span class="s1">&#39;0 AND &quot;&quot;&#39;</span><span class="p">,</span> <span class="c1"># &quot;falsey&quot; values</span>
+	<span class="s1">&#39;IF(bid.ad_size == &quot;big&quot;, &quot;HUGE&quot;, &quot;default&quot;)&#39;</span> <span class="c1">#the IF function </span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>_c0    _c1    _c2    _c3    _c4
+-----  -----  -----  -----  -------
+true   false  true   false  default
+true   false  true   false  HUGE
+true   false  true   false  HUGE
+</pre></div>
+</div>
+</div>
+<div class="section" id="math-functions">
+<h2>Math Functions<a class="headerlink" href="#math-functions" title="Permalink to this headline">¶</a></h2>
+<p>The Expression Language contains a basic set of mathematical operators and functions to cover basic numerical transformations.  For a full list of mathematical operations, go <a class="reference external" href="http://insert-url-to-math-operator-docs-here">here</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+  <span class="s1">&#39;1 * (3 + 4) / 2 % 2&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;EXP(1)&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;LOG(23, 2)&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;PI()&#39;</span><span class="p">,</span> 
+  <span class="s1">&#39;SIN(45)&#39;</span><span class="p">,</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  _c0      _c1      _c2      _c3       _c4
+-----  -------  -------  -------  --------
+  1.5  2.71828  4.52356  3.14159  0.850904
+  1.5  2.71828  4.52356  3.14159  0.850904
+  1.5  2.71828  4.52356  3.14159  0.850904
+</pre></div>
+</div>
+</div>
+<div class="section" id="statistics-random-numbers-and-hashing">
+<h2>Statistics, Random Numbers, and Hashing<a class="headerlink" href="#statistics-random-numbers-and-hashing" title="Permalink to this headline">¶</a></h2>
+<p>TODO: <code class="docutils literal notranslate"><span class="pre">PDF()</span></code>, <code class="docutils literal notranslate"><span class="pre">CDF()</span></code>, <code class="docutils literal notranslate"><span class="pre">iCDF()</span></code>, <code class="docutils literal notranslate"><span class="pre">RNG()</span></code>, <code class="docutils literal notranslate"><span class="pre">SAMPLE()</span></code>, <code class="docutils literal notranslate"><span class="pre">MD5()</span></code>, <code class="docutils literal notranslate"><span class="pre">RANDOM()</span></code>, etc.</p>
+</div>
+<div class="section" id="string-manipulation">
+<h2>String Manipulation<a class="headerlink" href="#string-manipulation" title="Permalink to this headline">¶</a></h2>
+<p>Some examples of common string manipulation operations:
+<code class="docutils literal notranslate"><span class="pre">CONCAT()</span></code>,  <code class="docutils literal notranslate"><span class="pre">UPPER()</span></code>,  <code class="docutils literal notranslate"><span class="pre">LOWER()</span></code>,  <code class="docutils literal notranslate"><span class="pre">COALESCE()</span></code>, <code class="docutils literal notranslate"><span class="pre">STRING_SPLIT()</span></code>,  <code class="docutils literal notranslate"><span class="pre">REGEX_EXTRACT()</span></code>,  <code class="docutils literal notranslate"><span class="pre">REGEX_REPLACE()</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;bid.ad_size&#39;</span><span class="p">,</span> <span class="c1">#base attribute of ad size</span>
+	<span class="s1">&#39;UPPER(bid.ad_size)&#39;</span><span class="p">,</span> <span class="c1">#upper case </span>
+	<span class="s1">&#39;lower(bid.ad_size)&#39;</span><span class="p">,</span> <span class="c1">#lower case</span>
+	<span class="s1">&#39;COALESCE(bid.ad_size, &quot;UNKNOWN&quot;)&#39;</span><span class="p">,</span> <span class="c1">#coalesce nulls  </span>
+	<span class="s1">&#39;STRING_SPLIT(bid.ad_size, &quot;i&quot;)&#39;</span><span class="p">,</span> <span class="c1">#split strings into arrays</span>
+	<span class="s1">&#39;REGEX_EXTRACT(bid.ad_size, &quot;[a-zA-Z0-9]&quot;, 0)&#39;</span><span class="p">,</span> <span class="c1">#extract a regex group</span>
+	<span class="s1">&#39;REGEX_REPLACE(bid.ad_size, [&quot;b&quot;, &quot;_&quot;, &quot;i&quot;, &quot;xx&quot;])&#39;</span><span class="p">,</span> <span class="c1">#replace characters in a string</span>
+	<span class="s1">&#39;TO_STRING(1.3)&#39;</span><span class="p">,</span> <span class="c1">#cast anything to a string</span>
+	<span class="s1">&#39;bid.ad_size == &quot;BIG&quot;&#39;</span> <span class="c1">#string equality</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>_c0    _c1    _c2    _c3      _c4    _c5    _c6      _c7  _c8
+-----  -----  -----  -------  -----  -----  -----  -----  -----
+                     UNKNOWN                         1.3  false
+big    BIG    big    big      [b,g]  b      _xxg     1.3  false
+big    BIG    big    big      [b,g]  b      _xxg     1.3  false
+</pre></div>
+</div>
+</div>
+<div class="section" id="date-time-manipulation">
+<h2>Date/Time Manipulation<a class="headerlink" href="#date-time-manipulation" title="Permalink to this headline">¶</a></h2>
+<p>TODO<code class="docutils literal notranslate"><span class="pre">NOW()</span></code>, <code class="docutils literal notranslate"><span class="pre">DATE()</span></code>, <code class="docutils literal notranslate"><span class="pre">TO_DATETIME()</span></code>, <code class="docutils literal notranslate"><span class="pre">DAY_OF_WEEK()</span></code>, <code class="docutils literal notranslate"><span class="pre">MILLIS()</span></code>, <code class="docutils literal notranslate"><span class="pre">FROM_UNIXTIME()</span></code></p>
+</div>
+<div class="section" id="array-manipulation">
+<h2>Array Manipulation<a class="headerlink" href="#array-manipulation" title="Permalink to this headline">¶</a></h2>
+<p>TODO<code class="docutils literal notranslate"><span class="pre">MAP()</span></code>, <code class="docutils literal notranslate"><span class="pre">REDUCE()</span></code>, <code class="docutils literal notranslate"><span class="pre">FILTER()</span></code>, <code class="docutils literal notranslate"><span class="pre">RANGE()</span></code>, <code class="docutils literal notranslate"><span class="pre">SIZE()</span></code>, <code class="docutils literal notranslate"><span class="pre">SORT()</span></code>, <code class="docutils literal notranslate"><span class="pre">MIN()</span></code>, <code class="docutils literal notranslate"><span class="pre">MAX()</span></code>, etc.</p>
+</div>
+<div class="section" id="local-variables-and-multi-statement-expressions">
+<h2>Local Variables and Multi-Statement Expressions<a class="headerlink" href="#local-variables-and-multi-statement-expressions" title="Permalink to this headline">¶</a></h2>
+<p>Long transformations can be broken up into multiple statements, delimited by a <code class="docutils literal notranslate"><span class="pre">;</span></code> for readability.  For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">positive_value=1.0;</span>
+<span class="s1">negative_value=-1.0;</span>
+<span class="s1">ad_size=COALESCE(UPPER(bid.ad_size), &#39;UNKNOWN&#39;);</span>
+<span class="s1">if(bid.ad_size == &#39;BIG&#39;, positive_value, negative_value)</span>
+<span class="s1">&#39;&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+<span class="c1">#In multi-statement expressions, the last statement in the expression must return a value.</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>  _c0
+-----
+   -1
+   -1
+   -1
+</pre></div>
+</div>
+</div>
+<div class="section" id="timeline-scanning-operations">
+<h2>Timeline Scanning Operations<a class="headerlink" href="#timeline-scanning-operations" title="Permalink to this headline">¶</a></h2>
+<p>Because of TQL’s data processing model, the entire timeline is available in the context of each event row being processed.  This makes it simple to write expressions that summarize the activity on a timeline, or compare activity on a timeline to the current event.  For Example:</p>
+</div>
+<div class="section" id="the-predict-function">
+<h2>The PREDICT Function<a class="headerlink" href="#the-predict-function" title="Permalink to this headline">¶</a></h2>
+<p>Models are first-class citizens of TQL, and are accessible via the native function <code class="docutils literal notranslate"><span class="pre">PREDICT()</span></code>. Models are published into TQL with the column expressions used to produce the features, and because TQL expressions are applied to timeline events only when a query is executed, TQL can create result sets with model predictions as well as other attributes or metrics.  For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;bid.ad_size&#39;</span><span class="p">,</span>
+	<span class="s1">&#39;PREDICT(&quot;my_model&quot;)&#39;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Since the output of <code class="docutils literal notranslate"><span class="pre">PREDICT()</span></code> is simply a floating point number, it can be further manipulated using the expression language.  Multiple models can even be composed together to compute derived values.  For example, perhaps you would like to join together your predictions of winrate and conversion rate:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s2">&quot;PREDICT(&#39;winrate_model&#39;) * PREDICT(&#39;coversion_rate_model&#39;)&quot;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Models must be previously published into TQL.  Refer to <span class="xref myst">Model Training and Publishing</span> guide for more information on this topic.</p>
+</div>
+<div class="section" id="the-set-property-function">
+<h2>The SET_PROPERTY Function<a class="headerlink" href="#the-set-property-function" title="Permalink to this headline">¶</a></h2>
+<p>The native function <code class="docutils literal notranslate"><span class="pre">SET_PROPERTY()</span></code>can be used to temporarily change an attribute of the input event for the rest of the execution of the current expression.  For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;bid.ad_size&#39;</span><span class="p">,</span>
+	<span class="s1">&#39;SET_PROPERTY(&quot;bid.ad_size&quot;, &quot;tiny&quot;); bid.ad_size&#39;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>_c0    _c1
+-----  -----
+       tiny
+big    tiny
+big    tiny
+</pre></div>
+</div>
+<p>This functionality is powerful in conjunction with the <a class="reference external" href="#Model-Predict-Function">Model Predict Function</a>, allowing you to easily write queries that make counterfactual predictions.  For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;bid.ad_size&#39;</span><span class="p">,</span>
+	<span class="s1">&#39;SET_PROPERTY(&quot;bid.ad_size&quot;, &quot;tiny&quot;); bid.ad_size&#39;</span> 
+	<span class="s1">&#39;PREDICT(&quot;my_winrate_model&quot;)&#39;</span><span class="p">,</span> 
+	<span class="s1">&#39;SET_PROPERTY(&quot;bid.ad_size&quot;, &quot;tiny&quot;); PREDICT(&quot;my_winrate_model&quot;)&#39;</span> 
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="comments">
+<h2>Comments<a class="headerlink" href="#comments" title="Permalink to this headline">¶</a></h2>
+<p>Expressions may contain comments.  Both inline and multi-line comments are supported:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">ad_size = bid.ad_size; //this is a comment</span>
+<span class="s1">/*</span>
+<span class="s1">this is a comment...</span>
+<span class="s1">...on multiple lines</span>
+<span class="s1">*/</span>
+<span class="s1">ad_size </span>
+<span class="s1">&#39;&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>_c0
+-----
+
+big
+big
+</pre></div>
+</div>
+</div>
+<div class="section" id="user-defined-functions-udfs">
+<h2>User Defined Functions (UDFs)<a class="headerlink" href="#user-defined-functions-udfs" title="Permalink to this headline">¶</a></h2>
+<p>In addition to TQL’s library of built-in functions, the user can write additional functions to extend the language’s capabilities with custom behavior.  Functions are defined with the syntax <code class="docutils literal notranslate"><span class="pre">function(...){</span> <span class="pre">...</span> <span class="pre">}</span></code>.  A function may also provide an optional doc string preceding it.  For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+  <span class="s1">&#39;clean_ad_size()&#39;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">udf</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">function clean_ad_size() {</span>
+<span class="s1">  COALESCE(UPPER(bid.ad_size), &#39;UNKNOWN&#39;)</span>
+<span class="s1">}</span>
+<span class="s1">&#39;&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>_c0
+-------
+UNKNOWN
+BIG
+BIG
+</pre></div>
+</div>
+<p>Just like regular expressions, UDFs may contain multiple statements, delimited by a <code class="docutils literal notranslate"><span class="pre">;</span></code>, in which case the last statement must return a value.  UDFs may also define input arguments.  For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+  <span class="s1">&#39;circumference(3)&#39;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">udf</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">function circumference(r) {</span>
+<span class="s1">	diameter = 2 * r;</span>
+<span class="s1">	circ = diameter *  PI();</span>
+<span class="s1">	circ</span>
+<span class="s1">}</span>
+<span class="s1">&#39;&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>    _c0
+-------
+18.8496
+18.8496
+18.8496
+</pre></div>
+</div>
+</div>
+<div class="section" id="compile-and-runtime-error-handling">
+<h2>Compile and Runtime Error Handling<a class="headerlink" href="#compile-and-runtime-error-handling" title="Permalink to this headline">¶</a></h2>
+<p>If an expression fails to compile, an error will be shown when trying to submit the query.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#For example, &#39;blah&#39;  has no meaning here:</span>
+<span class="n">select</span><span class="p">(</span><span class="s1">&#39;blah&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Encountered 1 expression compilation error: Line 1:0 Unknown variable &#39;@blah&#39; (in column _c0)
+Expression error: Line 1:0 Unknown variable &#39;@blah&#39; (in column _c0)
+blah
+^
+
+
+
+
+---------------------------------------------------------------------------
+
+TQLAnalysisException                      Traceback (most recent call last)
+
+~/dev/.virtualenvs/noumena-dev/lib/python3.7/site-packages/IPython/core/formatters.py in __call__(self, obj)
+    343             method = get_real_method(obj, self.print_method)
+    344             if method is not None:
+--&gt; 345                 return method()
+    346             return None
+    347         else:
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in _repr_html_(self)
+    870 
+    871     def _repr_html_(self):
+--&gt; 872         return self.submit(interactive=self._interactive)._repr_html_()
+    873 
+    874     def __iter__(self):
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in submit(self, interactive, wait, print_payloads, analyze, spark)
+    758         from noumena.tql import icarus
+    759         start = time.time()
+--&gt; 760         submit_reply = icarus.post(&#39;query/submit&#39;, self.json(), print_json=print_payloads)
+    761         if interactive:
+    762             #if interactive, the server reply will already contain the resultset
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in post(url, json_data, files_data, data, print_json)
+     13         print(json.dumps(json_data))
+     14     resp = requests.post(url, data=data, json=json_data, files=files_data)
+---&gt; 15     return _handle_response(url, resp, print_json=print_json)
+     16 
+     17 
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in _handle_response(url, resp, print_json)
+     69             else:
+     70                 print(reason)
+---&gt; 71             raise TQLAnalysisException(reason)
+     72         else:
+     73             msg = &#39;&#39;
+
+
+TQLAnalysisException: Encountered 1 expression compilation error: Line 1:0 Unknown variable &#39;@blah&#39; (in column _c0)Expression error: Line 1:0 Unknown variable &#39;@blah&#39; (in column _c0)
+blah
+^
+
+
+
+
+
+Query&lt;project_id=4, 
+interactive=None, 
+timeline_limit=None, 
+row_limit=None, 
+from_filters=None, 
+where_filters=None, 
+columns=[{&#39;name&#39;: None, &#39;expression&#39;: &#39;blah&#39;, &#39;type&#39;: &#39;METADATA&#39;}], 
+sampling=None&gt;
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#In this example, the `LOG` function requires two operands, the input number and the log base to use:</span>
+<span class="n">select</span><span class="p">(</span><span class="s1">&#39;log(3)&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Encountered 1 expression compilation error: Line 1:0 LOG function needs 2 operands (in column _c0)
+Expression error: Line 1:0 LOG function needs 2 operands (in column _c0)
+log(3)
+^
+
+
+
+
+---------------------------------------------------------------------------
+
+TQLAnalysisException                      Traceback (most recent call last)
+
+~/dev/.virtualenvs/noumena-dev/lib/python3.7/site-packages/IPython/core/formatters.py in __call__(self, obj)
+    343             method = get_real_method(obj, self.print_method)
+    344             if method is not None:
+--&gt; 345                 return method()
+    346             return None
+    347         else:
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in _repr_html_(self)
+    870 
+    871     def _repr_html_(self):
+--&gt; 872         return self.submit(interactive=self._interactive)._repr_html_()
+    873 
+    874     def __iter__(self):
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in submit(self, interactive, wait, print_payloads, analyze, spark)
+    758         from noumena.tql import icarus
+    759         start = time.time()
+--&gt; 760         submit_reply = icarus.post(&#39;query/submit&#39;, self.json(), print_json=print_payloads)
+    761         if interactive:
+    762             #if interactive, the server reply will already contain the resultset
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in post(url, json_data, files_data, data, print_json)
+     13         print(json.dumps(json_data))
+     14     resp = requests.post(url, data=data, json=json_data, files=files_data)
+---&gt; 15     return _handle_response(url, resp, print_json=print_json)
+     16 
+     17 
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in _handle_response(url, resp, print_json)
+     69             else:
+     70                 print(reason)
+---&gt; 71             raise TQLAnalysisException(reason)
+     72         else:
+     73             msg = &#39;&#39;
+
+
+TQLAnalysisException: Encountered 1 expression compilation error: Line 1:0 LOG function needs 2 operands (in column _c0)Expression error: Line 1:0 LOG function needs 2 operands (in column _c0)
+log(3)
+^
+
+
+
+
+
+Query&lt;project_id=4, 
+interactive=None, 
+timeline_limit=None, 
+row_limit=None, 
+from_filters=None, 
+where_filters=None, 
+columns=[{&#39;name&#39;: None, &#39;expression&#39;: &#39;log(3)&#39;, &#39;type&#39;: &#39;METADATA&#39;}], 
+sampling=None&gt;
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#In this example, we simply forgot a closing parenthesis:</span>
+<span class="n">select</span><span class="p">(</span><span class="s1">&#39;log(3&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Encountered 1 expression compilation error: Line 1:5 missing &#39;)&#39; at &#39;&lt;EOF&gt;&#39; (in column _c0)
+Expression error: Line 1:5 missing &#39;)&#39; at &#39;&lt;EOF&gt;&#39; (in column _c0)
+log(3
+-----^
+
+
+
+
+---------------------------------------------------------------------------
+
+TQLAnalysisException                      Traceback (most recent call last)
+
+&lt;ipython-input-17-fc900080c962&gt; in &lt;module&gt;
+      1 #In this example, we simply forgot a closing parenthesis:
+----&gt; 2 select(&#39;log(3&#39;).from_events(4).show()
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in show(self)
+    779         show the resultset dataframe as a pretty printed table on stdout.
+    780         &#39;&#39;&#39;
+--&gt; 781         resultset = self.submit(interactive=True)
+    782         df = resultset.pandas_dataframe()
+    783         print(tabulate.tabulate(df.values, df.columns, tablefmt=&quot;grid_tables&quot;))
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in submit(self, interactive, wait, print_payloads, analyze, spark)
+    758         from noumena.tql import icarus
+    759         start = time.time()
+--&gt; 760         submit_reply = icarus.post(&#39;query/submit&#39;, self.json(), print_json=print_payloads)
+    761         if interactive:
+    762             #if interactive, the server reply will already contain the resultset
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in post(url, json_data, files_data, data, print_json)
+     13         print(json.dumps(json_data))
+     14     resp = requests.post(url, data=data, json=json_data, files=files_data)
+---&gt; 15     return _handle_response(url, resp, print_json=print_json)
+     16 
+     17 
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in _handle_response(url, resp, print_json)
+     69             else:
+     70                 print(reason)
+---&gt; 71             raise TQLAnalysisException(reason)
+     72         else:
+     73             msg = &#39;&#39;
+
+
+TQLAnalysisException: Encountered 1 expression compilation error: Line 1:5 missing &#39;)&#39; at &#39;&lt;EOF&gt;&#39; (in column _c0)Expression error: Line 1:5 missing &#39;)&#39; at &#39;&lt;EOF&gt;&#39; (in column _c0)
+log(3
+-----^
+</pre></div>
+</div>
+<p>However, if an expression compiles successfully but fails during evaluation, then the result for that row will be null.  In this example, <code class="docutils literal notranslate"><span class="pre">upper(bid.ad_size)</span></code> returns null because some events rows do not have ad size defined at all.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;bid.ad_size&#39;</span><span class="p">,</span> 
+	<span class="s1">&#39;upper(bid.ad_size)&#39;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>_c0    _c1
+-----  -----
+
+big    BIG
+big    BIG
+</pre></div>
+</div>
+</div>
+<div class="section" id="tql-expression-debugger">
+<h2>TQL Expression Debugger<a class="headerlink" href="#tql-expression-debugger" title="Permalink to this headline">¶</a></h2>
+<p>TQL ships with a debugger to help you write expressions in Jupyter Notebooks.  To install the debugger, use the noumena command line tool:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$. noumena install-extensions
+</pre></div>
+</div>
+<p>To invoke the debugger, simply use the TQL built-in function <code class="docutils literal notranslate"><span class="pre">debugger()</span></code>, passing in a project id or name:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">debugger</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also invoke the debugger in the context of a TQL query, using it’s method.  When invoked this way, the debugger will be invoked with whatever query context you provide, including where clauses, unions, etc:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;bid.ad_size&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">debugger</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="where-to-next">
+<h2>Where To Next?<a class="headerlink" href="#where-to-next" title="Permalink to this headline">¶</a></h2>
+<p>Browse the <span class="xref myst"><strong>expression language cheat sheet</strong></span>,  and the full <span class="xref myst"><strong>expression function reference</strong></span>.</p>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+<div id="sourcelink">
+  <a href="_sources/expression-language.md.txt"
+     rel="nofollow">Source</a>
+</div>
+      
+    </p>
+    <p>
+        &copy; Copyright Nanigans, 2021.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.5.3.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>

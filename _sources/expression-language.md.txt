@@ -1,0 +1,550 @@
+# The TQL Expression Language
+The expression language is the core of TQL's data processing engine.  Expressions are written as Python strings and express a one-to-one transformation between an input timeline event object and a piece of output data.  These transformations form the building blocks of all TQL data processing queries.
+
+The language has strong syntactic similarities to SQL (basic functions, record-level structure) and Python (variables, list operations/aggregations, lambda/inline functions, user-defined functions). However, the expression language has several advantages:
+
+-   **Performant**: TQL Expressions are compiled into Java byte code and hence, are very fast.
+-   **Lazily Evaluated**: TQL Expressions are applied directly to raw timelines and events at query time, meaning all datasets are dynamically extracted from Timelines, eliminating the need for hard-to-maintain ETL pipelines.
+-   **Built for ML Model Evaluation**: Trained ML Models deployed using TQL also store all the expressions expressions used to transform raw events into the training dataset, meaning feature extraction at scoring time is already built into the model.  
+
+TQL Expressions only exist in the context of a project and query.  For this guide, we will the demo project **lethe** (id=4) to learn the language.  Lethe represents a typical online advertising funnel, with a set of online ad auctions `bid`, a set of website activity logs  `activity`, and static user demographics `user`.  Each Timeline represents the total of all observed events for a particular user.  For this guide we will be manipulating data primarily from the `bid` timeseries.  
+
+Further reference:
+[**Expression language cheat sheet**](TODO),  and the full [**expression function reference**](TODO)
+
+
+```python
+from noumena.tql import *
+```
+
+    -------------------------------------------------------------------
+               Version: 20.1.16-SNAPSHOT
+     Version Timestamp: 2021-07-21 17:34:23
+           Version Age: 11 days, 22 hours, 42 minutes, 37 seconds
+       Filesystem Root: /Users/zkozick/.noumena/files
+     Working Directory: /Users/zkozick/.noumena
+    Configuration File: /Users/zkozick/.noumena/noumena_conf.yml
+           Api Gateway: http://localhost:9000
+        Service Status: Icarus: ONLINE, Daedalus: ONLINE
+        Service Uptime: 5 days, 4 hours, 18 minutes, 36 seconds
+    -------------------------------------------------------------------
+
+
+## Literals
+TQL accepts string, boolean, integer, decimal, array, and null literals.  For example:
+
+
+```python
+select(
+	'"Hello World!"', 
+	1, 
+	1.3, 
+	True,
+	"[1,2,3,4]",
+	None
+).from_events(4).limit(3).show()
+```
+
+    _c0             _c1    _c2  _c3    _c4        _c5
+    ------------  -----  -----  -----  ---------  -----
+    Hello World!      1    1.3  true   [1,2,3,4]
+    Hello World!      1    1.3  true   [1,2,3,4]
+    Hello World!      1    1.3  true   [1,2,3,4]
+
+
+## Event Attributes
+In TQL expressions, attributes of timeline events are addressable as variables.  For example, Lethe is composed of the `bid` timeseries, which contains the attributes `ad_size`, `bid`, `event_time`, `ghosted`, `request_id`, `user_id`, and `won`.  These attributes are directly selectable using the expression language as variables, for example: 
+
+
+```python
+select(
+	'bid.ad_size', 
+	'bid.bid', 
+	'bid.ghosted', 
+	'bid.request_id', 
+	'bid.user_id', 
+	'bid.won'
+).from_events(4).limit(3).show()
+```
+
+    _c0      _c1  _c2    _c3     _c4    _c5
+    -----  -----  -----  ------  -----  -----
+    
+    big        1  false  r13260  u252   true
+    big        1  false  r13376  u252   true
+
+
+## Booleans and Logical Operators
+The expression language contains the case-insensitive primitives `true` and `false`. Non-null, non-empty, non-zero values are also considered "truthy" and will be intepreted as true in a boolean context, such as in a where clause, The expression language has the native boolean operators `AND` and `OR` to express compound conditionals.  These may be used in isolation, or in conjunction with the `IF()` function to emit conditional values in columns.
+
+
+```python
+select(
+	'true', #primitives of true
+	'FaLsE', #case insensitive primitives
+	'1 OR "non-empty string!"', # "truthy" values with compound conditionals
+	'0 AND ""', # "falsey" values
+	'IF(bid.ad_size == "big", "HUGE", "default")' #the IF function 
+).from_events(4).limit(3).show()
+```
+
+    _c0    _c1    _c2    _c3    _c4
+    -----  -----  -----  -----  -------
+    true   false  true   false  default
+    true   false  true   false  HUGE
+    true   false  true   false  HUGE
+
+
+## Math Functions
+The Expression Language contains a basic set of mathematical operators and functions to cover basic numerical transformations.  For a full list of mathematical operations, go [here](http://insert-url-to-math-operator-docs-here).
+
+
+```python
+select(
+  '1 * (3 + 4) / 2 % 2',
+  'EXP(1)',
+  'LOG(23, 2)',
+  'PI()', 
+  'SIN(45)',
+).from_events(4).limit(3).show()
+```
+
+      _c0      _c1      _c2      _c3       _c4
+    -----  -------  -------  -------  --------
+      1.5  2.71828  4.52356  3.14159  0.850904
+      1.5  2.71828  4.52356  3.14159  0.850904
+      1.5  2.71828  4.52356  3.14159  0.850904
+
+
+## Statistics, Random Numbers, and Hashing
+TODO: `PDF()`, `CDF()`, `iCDF()`, `RNG()`, `SAMPLE()`, `MD5()`, `RANDOM()`, etc.  
+
+## String Manipulation
+Some examples of common string manipulation operations:
+ `CONCAT()`,  `UPPER()`,  `LOWER()`,  `COALESCE()`, `STRING_SPLIT()`,  `REGEX_EXTRACT()`,  `REGEX_REPLACE()`
+
+
+```python
+select(
+	'bid.ad_size', #base attribute of ad size
+	'UPPER(bid.ad_size)', #upper case 
+	'lower(bid.ad_size)', #lower case
+	'COALESCE(bid.ad_size, "UNKNOWN")', #coalesce nulls  
+	'STRING_SPLIT(bid.ad_size, "i")', #split strings into arrays
+	'REGEX_EXTRACT(bid.ad_size, "[a-zA-Z0-9]", 0)', #extract a regex group
+	'REGEX_REPLACE(bid.ad_size, ["b", "_", "i", "xx"])', #replace characters in a string
+	'TO_STRING(1.3)', #cast anything to a string
+	'bid.ad_size == "BIG"' #string equality
+).from_events(4).limit(3).show()
+```
+
+    _c0    _c1    _c2    _c3      _c4    _c5    _c6      _c7  _c8
+    -----  -----  -----  -------  -----  -----  -----  -----  -----
+                         UNKNOWN                         1.3  false
+    big    BIG    big    big      [b,g]  b      _xxg     1.3  false
+    big    BIG    big    big      [b,g]  b      _xxg     1.3  false
+
+
+## Date/Time Manipulation
+TODO`NOW()`, `DATE()`, `TO_DATETIME()`, `DAY_OF_WEEK()`, `MILLIS()`, `FROM_UNIXTIME()`
+
+## Array Manipulation
+TODO`MAP()`, `REDUCE()`, `FILTER()`, `RANGE()`, `SIZE()`, `SORT()`, `MIN()`, `MAX()`, etc.  
+
+## Local Variables and Multi-Statement Expressions
+Long transformations can be broken up into multiple statements, delimited by a `;` for readability.  For example:
+
+
+```python
+select('''
+positive_value=1.0;
+negative_value=-1.0;
+ad_size=COALESCE(UPPER(bid.ad_size), 'UNKNOWN');
+if(bid.ad_size == 'BIG', positive_value, negative_value)
+''').from_events(4).limit(3).show()
+#In multi-statement expressions, the last statement in the expression must return a value.
+```
+
+      _c0
+    -----
+       -1
+       -1
+       -1
+
+
+## Timeline Scanning Operations
+Because of TQL's data processing model, the entire timeline is available in the context of each event row being processed.  This makes it simple to write expressions that summarize the activity on a timeline, or compare activity on a timeline to the current event.  For Example:
+
+## The PREDICT Function
+Models are first-class citizens of TQL, and are accessible via the native function `PREDICT()`. Models are published into TQL with the column expressions used to produce the features, and because TQL expressions are applied to timeline events only when a query is executed, TQL can create result sets with model predictions as well as other attributes or metrics.  For example:
+
+
+```python
+select(
+	'bid.ad_size',
+	'PREDICT("my_model")'
+).from_events(4).limit(3).show()
+```
+
+Since the output of `PREDICT()` is simply a floating point number, it can be further manipulated using the expression language.  Multiple models can even be composed together to compute derived values.  For example, perhaps you would like to join together your predictions of winrate and conversion rate:
+
+
+```python
+select(
+	"PREDICT('winrate_model') * PREDICT('coversion_rate_model')"
+).from_events(4).limit(3).show()
+```
+
+Models must be previously published into TQL.  Refer to [Model Training and Publishing](#) guide for more information on this topic.
+
+## The SET_PROPERTY Function
+The native function `SET_PROPERTY()`can be used to temporarily change an attribute of the input event for the rest of the execution of the current expression.  For example:
+
+
+```python
+select(
+	'bid.ad_size',
+	'SET_PROPERTY("bid.ad_size", "tiny"); bid.ad_size'
+).from_events(4).limit(3).show()
+```
+
+    _c0    _c1
+    -----  -----
+           tiny
+    big    tiny
+    big    tiny
+
+
+This functionality is powerful in conjunction with the [Model Predict Function](#Model-Predict-Function), allowing you to easily write queries that make counterfactual predictions.  For example:
+
+
+```python
+select(
+	'bid.ad_size',
+	'SET_PROPERTY("bid.ad_size", "tiny"); bid.ad_size' 
+	'PREDICT("my_winrate_model")', 
+	'SET_PROPERTY("bid.ad_size", "tiny"); PREDICT("my_winrate_model")' 
+).from_events(4).limit(3).show()
+```
+
+## Comments
+Expressions may contain comments.  Both inline and multi-line comments are supported:
+
+
+```python
+select('''
+ad_size = bid.ad_size; //this is a comment
+/*
+this is a comment...
+...on multiple lines
+*/
+ad_size 
+''').from_events(4).limit(3).show()
+```
+
+    _c0
+    -----
+    
+    big
+    big
+
+
+## User Defined Functions (UDFs)
+In addition to TQL's library of built-in functions, the user can write additional functions to extend the language's capabilities with custom behavior.  Functions are defined with the syntax `function(...){ ... }`.  A function may also provide an optional doc string preceding it.  For example:
+
+
+```python
+select(
+  'clean_ad_size()'
+).from_events(4).udf('''
+function clean_ad_size() {
+  COALESCE(UPPER(bid.ad_size), 'UNKNOWN')
+}
+''').limit(3).show()
+```
+
+    _c0
+    -------
+    UNKNOWN
+    BIG
+    BIG
+
+
+Just like regular expressions, UDFs may contain multiple statements, delimited by a `;`, in which case the last statement must return a value.  UDFs may also define input arguments.  For example:
+
+
+```python
+select(
+  'circumference(3)'
+).from_events(4).udf('''
+function circumference(r) {
+	diameter = 2 * r;
+	circ = diameter *  PI();
+	circ
+}
+''').limit(3).show()
+```
+
+        _c0
+    -------
+    18.8496
+    18.8496
+    18.8496
+
+
+## Compile and Runtime Error Handling
+If an expression fails to compile, an error will be shown when trying to submit the query.  
+
+
+```python
+#For example, 'blah'  has no meaning here:
+select('blah').from_events(4).show()
+```
+
+    Encountered 1 expression compilation error: Line 1:0 Unknown variable '@blah' (in column _c0)
+    Expression error: Line 1:0 Unknown variable '@blah' (in column _c0)
+    blah
+    ^
+    
+
+
+
+    ---------------------------------------------------------------------------
+
+    TQLAnalysisException                      Traceback (most recent call last)
+
+    ~/dev/.virtualenvs/noumena-dev/lib/python3.7/site-packages/IPython/core/formatters.py in __call__(self, obj)
+        343             method = get_real_method(obj, self.print_method)
+        344             if method is not None:
+    --> 345                 return method()
+        346             return None
+        347         else:
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in _repr_html_(self)
+        870 
+        871     def _repr_html_(self):
+    --> 872         return self.submit(interactive=self._interactive)._repr_html_()
+        873 
+        874     def __iter__(self):
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in submit(self, interactive, wait, print_payloads, analyze, spark)
+        758         from noumena.tql import icarus
+        759         start = time.time()
+    --> 760         submit_reply = icarus.post('query/submit', self.json(), print_json=print_payloads)
+        761         if interactive:
+        762             #if interactive, the server reply will already contain the resultset
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in post(url, json_data, files_data, data, print_json)
+         13         print(json.dumps(json_data))
+         14     resp = requests.post(url, data=data, json=json_data, files=files_data)
+    ---> 15     return _handle_response(url, resp, print_json=print_json)
+         16 
+         17 
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in _handle_response(url, resp, print_json)
+         69             else:
+         70                 print(reason)
+    ---> 71             raise TQLAnalysisException(reason)
+         72         else:
+         73             msg = ''
+
+
+    TQLAnalysisException: Encountered 1 expression compilation error: Line 1:0 Unknown variable '@blah' (in column _c0)Expression error: Line 1:0 Unknown variable '@blah' (in column _c0)
+    blah
+    ^
+
+
+
+
+
+    Query<project_id=4, 
+    interactive=None, 
+    timeline_limit=None, 
+    row_limit=None, 
+    from_filters=None, 
+    where_filters=None, 
+    columns=[{'name': None, 'expression': 'blah', 'type': 'METADATA'}], 
+    sampling=None>
+
+
+
+
+```python
+#In this example, the `LOG` function requires two operands, the input number and the log base to use:
+select('log(3)').from_events(4).show()
+```
+
+    Encountered 1 expression compilation error: Line 1:0 LOG function needs 2 operands (in column _c0)
+    Expression error: Line 1:0 LOG function needs 2 operands (in column _c0)
+    log(3)
+    ^
+    
+
+
+
+    ---------------------------------------------------------------------------
+
+    TQLAnalysisException                      Traceback (most recent call last)
+
+    ~/dev/.virtualenvs/noumena-dev/lib/python3.7/site-packages/IPython/core/formatters.py in __call__(self, obj)
+        343             method = get_real_method(obj, self.print_method)
+        344             if method is not None:
+    --> 345                 return method()
+        346             return None
+        347         else:
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in _repr_html_(self)
+        870 
+        871     def _repr_html_(self):
+    --> 872         return self.submit(interactive=self._interactive)._repr_html_()
+        873 
+        874     def __iter__(self):
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in submit(self, interactive, wait, print_payloads, analyze, spark)
+        758         from noumena.tql import icarus
+        759         start = time.time()
+    --> 760         submit_reply = icarus.post('query/submit', self.json(), print_json=print_payloads)
+        761         if interactive:
+        762             #if interactive, the server reply will already contain the resultset
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in post(url, json_data, files_data, data, print_json)
+         13         print(json.dumps(json_data))
+         14     resp = requests.post(url, data=data, json=json_data, files=files_data)
+    ---> 15     return _handle_response(url, resp, print_json=print_json)
+         16 
+         17 
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in _handle_response(url, resp, print_json)
+         69             else:
+         70                 print(reason)
+    ---> 71             raise TQLAnalysisException(reason)
+         72         else:
+         73             msg = ''
+
+
+    TQLAnalysisException: Encountered 1 expression compilation error: Line 1:0 LOG function needs 2 operands (in column _c0)Expression error: Line 1:0 LOG function needs 2 operands (in column _c0)
+    log(3)
+    ^
+
+
+
+
+
+    Query<project_id=4, 
+    interactive=None, 
+    timeline_limit=None, 
+    row_limit=None, 
+    from_filters=None, 
+    where_filters=None, 
+    columns=[{'name': None, 'expression': 'log(3)', 'type': 'METADATA'}], 
+    sampling=None>
+
+
+
+
+```python
+#In this example, we simply forgot a closing parenthesis:
+select('log(3').from_events(4).show()
+```
+
+    Encountered 1 expression compilation error: Line 1:5 missing ')' at '<EOF>' (in column _c0)
+    Expression error: Line 1:5 missing ')' at '<EOF>' (in column _c0)
+    log(3
+    -----^
+    
+
+
+
+    ---------------------------------------------------------------------------
+
+    TQLAnalysisException                      Traceback (most recent call last)
+
+    <ipython-input-17-fc900080c962> in <module>
+          1 #In this example, we simply forgot a closing parenthesis:
+    ----> 2 select('log(3').from_events(4).show()
+    
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in show(self)
+        779         show the resultset dataframe as a pretty printed table on stdout.
+        780         '''
+    --> 781         resultset = self.submit(interactive=True)
+        782         df = resultset.pandas_dataframe()
+        783         print(tabulate.tabulate(df.values, df.columns, tablefmt="grid_tables"))
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in submit(self, interactive, wait, print_payloads, analyze, spark)
+        758         from noumena.tql import icarus
+        759         start = time.time()
+    --> 760         submit_reply = icarus.post('query/submit', self.json(), print_json=print_payloads)
+        761         if interactive:
+        762             #if interactive, the server reply will already contain the resultset
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in post(url, json_data, files_data, data, print_json)
+         13         print(json.dumps(json_data))
+         14     resp = requests.post(url, data=data, json=json_data, files=files_data)
+    ---> 15     return _handle_response(url, resp, print_json=print_json)
+         16 
+         17 
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in _handle_response(url, resp, print_json)
+         69             else:
+         70                 print(reason)
+    ---> 71             raise TQLAnalysisException(reason)
+         72         else:
+         73             msg = ''
+
+
+    TQLAnalysisException: Encountered 1 expression compilation error: Line 1:5 missing ')' at '<EOF>' (in column _c0)Expression error: Line 1:5 missing ')' at '<EOF>' (in column _c0)
+    log(3
+    -----^
+
+
+However, if an expression compiles successfully but fails during evaluation, then the result for that row will be null.  In this example, `upper(bid.ad_size)` returns null because some events rows do not have ad size defined at all.
+
+
+```python
+select(
+	'bid.ad_size', 
+	'upper(bid.ad_size)'
+).from_events(4).limit(3).show()
+```
+
+    _c0    _c1
+    -----  -----
+    
+    big    BIG
+    big    BIG
+
+
+## TQL Expression Debugger
+TQL ships with a debugger to help you write expressions in Jupyter Notebooks.  To install the debugger, use the noumena command line tool:
+```
+$. noumena install-extensions
+```
+
+To invoke the debugger, simply use the TQL built-in function `debugger()`, passing in a project id or name:
+
+
+```python
+debugger(4)
+```
+
+You can also invoke the debugger in the context of a TQL query, using it's method.  When invoked this way, the debugger will be invoked with whatever query context you provide, including where clauses, unions, etc:
+
+
+```python
+select('bid.ad_size').from_events(4).debugger()
+```
+
+## Where To Next?
+Browse the [**expression language cheat sheet**](TODO),  and the full [**expression function reference**](TODO).

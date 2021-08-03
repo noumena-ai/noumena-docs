@@ -1,0 +1,415 @@
+# User-Defined Functions (UDFs)
+
+User-Defined Functions (UDFs) are user-programmable routines that operate on a single row and emit a value, just like regular TQL expressions.  UDF function bodies may contain multiple statements, delimited by `;`, as long as the last statement returns a value. This allows you to extend the TQL Expression Language to encode custom pieces of functionality specific to your problem space. 
+
+UDFs are defined as a Python string.
+```
+/** 
+ * This is the optional java-style function doc for udf 
+ * @param some parameters 
+ * @return return value of the function 
+ */ 
+function foo() { 
+  function body 
+} 
+```
+
+UDF's contain two parts:
+1. Function doc(optional)
+2. Function definition(starts with keyword `function`)
+
+There are three levels of UDFs, which we will cover in this guide:
+  1. Table/Project Level UDFs
+  2. Query level UDFs
+  3. Inline expression UDFs
+  
+
+
+
+```python
+from noumena.tql import *
+```
+
+    ------------------------------------------------------------------
+               Version: 20.1.16-SNAPSHOT
+     Version Timestamp: 2021-07-21 17:34:23
+           Version Age: 23 hours, 11 minutes, 13 seconds
+       Filesystem Root: /Users/zkozick/.noumena/files
+     Working Directory: /Users/zkozick/.noumena
+    Configuration File: /Users/zkozick/.noumena/noumena_conf.yml
+           Api Gateway: http://localhost:9000
+        Service Status: Icarus: ONLINE, Daedalus: ONLINE
+        Service Uptime: 1 days, 6 hours, 7 minutes, 16 seconds
+    ------------------------------------------------------------------
+
+
+## Table-level UDFs
+
+Table UDFs can be added via the TQL function `upload_udf(src1,src2, ...)` and will be available to any subsequent queries just like any builtin function. 
+
+You can validate/upload/delete/get udfs on a table level
+
+### Defining UDF function source strings
+
+<div class="alert alert-block alert-info">
+<b>Tip:</b> multiple function strings can be provided and they will be uploaded in the order of declaration.
+If a UDF calls another UDF in it's source, make sure all it's dependencies are declared first.
+</div>
+
+
+```python
+div2_func_src = '''
+/**
+* given an integer, long, or floating point number, return the value / 2
+* @param x Number
+* @return Double
+*/
+
+function div2(x) { 
+  x / 2 
+}
+'''
+
+div6_func_src = '''
+/**
+* given an integer, long, or floating point number, return the value / 6
+* @param x Number
+* @return Double
+*/
+
+function div6(x) { 
+  div2(x) / 3 
+}
+'''
+```
+
+### UDF Validation
+
+Validate a UDF to make sure there are no compilation errors, before uploading it to a table.
+
+
+```python
+validate_udf(1, div2_func_src, div6_func_src)
+```
+
+### Uploading a UDF to a table/project
+Table/project-level UDFs are uploaded using the tql function `upload_udf(project_id, src)`.  Validation on the UDF will be performed during the upload.  
+
+
+```python
+# clean up udfs from previous run
+delete_udf(1, 'div2')
+delete_udf(1, 'div6')
+
+# upload this UDF
+upload_udf(1, div2_func_src, div6_func_src)
+```
+
+Once the UDF has been successfully saved on the table, it may be used in TQL queries, just like any other native TQL function:
+
+
+```python
+select('div2(3)', 'div6(18)').from_events(1).limit(3)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1.5</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1.5</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1.5</td>
+      <td>3.0</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_f2bd0_row0_col0,#T_f2bd0_row0_col1,#T_f2bd0_row1_col0,#T_f2bd0_row1_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_f2bd0_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_f2bd0_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_f2bd0_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_f2bd0_row0_col1" class="data row0 col1" >div2(3)</td>
+            </tr>
+            <tr>
+                        <th id="T_f2bd0_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_f2bd0_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_f2bd0_row1_col1" class="data row1 col1" >div6(18)</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 2 columns in 0.46 seconds<i><br><br>
+
+
+
+### Looking up Table-level UDFs
+
+Find a Table-level UDF function definition by name:
+
+
+```python
+get_udf(1, 'div6')
+```
+
+
+
+
+<style  type="text/css" >
+    #T_d7384_ th {
+          text-align: left;
+    }#T_d7384_row0_col0,#T_d7384_row0_col1{
+            text-align:  left;
+            white-space:  pre-wrap;
+        }</style><table style="display:inline; padding-right: 20px" id="T_d7384_"  class="tex2jax_ignore"><thead>    <tr>        <th class="col_heading level0 col0" >name</th>        <th class="col_heading level0 col1" >source</th>    </tr></thead><tbody>
+                <tr>
+                                <td id="T_d7384_row0_col0" class="data row0 col0" >div6</td>
+                        <td id="T_d7384_row0_col1" class="data row0 col1" >/**
+* given an integer, long, or floating point number, return the value / 6
+* @param x Number
+* @return Double
+*/
+
+function div6(x) { 
+  div2(x) / 3 
+}</td>
+            </tr>
+    </tbody></table style="display:inline; padding-right: 20px">
+
+
+
+### Deleting a UDF
+
+
+```python
+# delete a udf by function name
+delete_udf(1, 'div6')
+
+# trying to retrieve it again will result in a TQLNotFoundException
+get_udf(1, 'div6')
+```
+
+    function div6 doesn't exist on project: 1 (404)
+
+
+
+    ---------------------------------------------------------------------------
+
+    TQLAnalysisNotFound                       Traceback (most recent call last)
+
+    <ipython-input-26-f53f5e57b2fc> in <module>
+          3 
+          4 # trying to retrieve it again will result in a TQLNotFoundException
+    ----> 5 get_udf(1, 'div6')
+    
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/udf.py in get_udf(project_id, function_name)
+         66 
+         67     """
+    ---> 68     function_src = icarus.get(f'projects/{project_id}/udf/{function_name}')
+         69     return UDF({function_name: function_src})
+         70 
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in get(url, params, print_json)
+         19     url = os.path.join(ICARUS_BASE, url)
+         20     resp = requests.get(url, params=params)
+    ---> 21     return _handle_response(url, resp, print_json=print_json)
+         22 
+         23 
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in _handle_response(url, resp, print_json)
+         53                 reason = resp.content
+         54             print(f'{reason} (404)')
+    ---> 55             raise TQLAnalysisNotFound(f'{url} {reason} (404)')
+         56         if resp.status_code == 400:
+         57             try:
+
+
+    TQLAnalysisNotFound: http://localhost:9000/v1/projects/1/udf/div6 function div6 doesn't exist on project: 1 (404)
+
+
+### List all existing UDFs on a table
+
+
+```python
+list_udfs(1)
+```
+
+## Query-level UDFs
+
+Query-level UDFs can be attached to a query via `select(…).udf(src1, src2, ...)` and will be available to any expression in the query, but not beyond.
+
+
+```python
+udf_src = '''
+function is_zero(val, epsilon) {
+  ABS(val) < epsilon 
+}
+'''
+select('is_zero(0.00062, .01)', 'is_zero(0.62, .01)').from_events(1).limit(3).udf(udf_src)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>true</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>true</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>true</td>
+      <td>false</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_ab0a2_row0_col0,#T_ab0a2_row0_col1,#T_ab0a2_row1_col0,#T_ab0a2_row1_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_ab0a2_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_ab0a2_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_ab0a2_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_ab0a2_row0_col1" class="data row0 col1" >is_zero(0.00062, .01)</td>
+            </tr>
+            <tr>
+                        <th id="T_ab0a2_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_ab0a2_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_ab0a2_row1_col1" class="data row1 col1" >is_zero(0.62, .01)</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 2 columns in 0.26 seconds<i><br><br>
+
+
+
+## Inline expression UDFs
+
+UDFs can also be placed in any expression, and will only be available for the scope of that expression:
+
+
+```python
+select('function say_hello(name) { concat("Hello, ", name, "!") } say_hello("Bob")').from_events(1).limit(3)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Hello, Bob!</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Hello, Bob!</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Hello, Bob!</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_c416a_row0_col0,#T_c416a_row0_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_c416a_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_c416a_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_c416a_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_c416a_row0_col1" class="data row0 col1" >function say_hello(name) { concat("Hello, ", name, "!") } say_hello("Bob")</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 1 columns in 0.28 seconds<i><br><br>
+
+
+
+
+```python
+
+```

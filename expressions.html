@@ -1,0 +1,1459 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>The TQL Expression Language &mdash; noumena-tql  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/noumena.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/noumena.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="overview.html" class="icon icon-home"> noumena-tql
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">   Quickstart Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="overview.html">noumena-tql</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="overview.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>The TQL Expression Language</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/expressions.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="the-tql-expression-language">
+<h1>The TQL Expression Language<a class="headerlink" href="#the-tql-expression-language" title="Permalink to this headline">¶</a></h1>
+<p>The expression language is the core of TQL’s data processing engine.  Expressions are written as Python strings and express a one-to-one transformation between an input timeline event object and a piece of output data.  These transformations form the building blocks of all TQL data processing queries.</p>
+<p>The language has strong syntactic similarities to SQL (basic functions, record-level structure) and Python (variables, list operations/aggregations, lambda/inline functions, user-defined functions). However, the expression language has several advantages:</p>
+<ul class="simple">
+<li><p><strong>Performant</strong>: TQL Expressions are compiled into Java byte code and hence, are very fast.</p></li>
+<li><p><strong>Lazily Evaluated</strong>: TQL Expressions are applied directly to raw timelines and events at query time, meaning all datasets are dynamically extracted from Timelines, eliminating the need for hard-to-maintain ETL pipelines.</p></li>
+<li><p><strong>Production-ready</strong>: Trained ML Models deployed using TQL also store all the expressions expressions used to transform raw events into the training dataset, meaning feature extraction at scoring time is already built into the model.</p></li>
+</ul>
+<p>TQL Expressions only exist in the context of a project and query.  For this guide, we will the demo project <strong>lethe</strong> (id=4) to learn the language.  Lethe represents a typical online advertising funnel, with a set of online ad auctions <code class="docutils literal notranslate"><span class="pre">bid</span></code>, a set of website activity logs  <code class="docutils literal notranslate"><span class="pre">activity</span></code>, and static user demographics <code class="docutils literal notranslate"><span class="pre">user</span></code>.  Each Timeline represents the total of all observed events for a particular user.  For this guide we will be manipulating data primarily from the <code class="docutils literal notranslate"><span class="pre">bid</span></code> timeseries.</p>
+<p>Further reference:
+<span class="xref myst"><strong>Expression language cheat sheet</strong></span>,  and the full <span class="xref myst"><strong>expression function reference</strong></span></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">noumena.tql</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>------------------------------------------------------------------
+           Version: 20.1.16-SNAPSHOT
+ Version Timestamp: 2021-07-21 17:34:23
+       Version Age: 17 hours, 8 minutes, 1 seconds
+   Filesystem Root: /Users/zkozick/.noumena/files
+ Working Directory: /Users/zkozick/.noumena
+Configuration File: /Users/zkozick/.noumena/noumena_conf.yml
+       Api Gateway: http://localhost:9000
+    Service Status: Icarus: ONLINE, Daedalus: ONLINE
+    Service Uptime: 1 days, 4 minutes, 4 seconds
+------------------------------------------------------------------
+</pre></div>
+</div>
+</div>
+<div class="section" id="literals">
+<h1>Literals<a class="headerlink" href="#literals" title="Permalink to this headline">¶</a></h1>
+<p>TQL accepts string, boolean, integer, decimal, array, and null literals.  For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;&quot;Hello World!&quot;&#39;</span><span class="p">,</span> 
+	<span class="mi">1</span><span class="p">,</span> 
+	<span class="mf">1.3</span><span class="p">,</span> 
+	<span class="kc">True</span><span class="p">,</span>
+	<span class="p">[</span><span class="mi">1</span><span class="p">,</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">,</span><span class="mi">4</span><span class="p">],</span>
+	<span class="kc">None</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+      <th>_c2</th>
+      <th>_c3</th>
+      <th>_c4</th>
+      <th>_c5</th>
+      <th>_c6</th>
+      <th>_c7</th>
+      <th>_c8</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Hello World!</td>
+      <td>1</td>
+      <td>1.3</td>
+      <td>true</td>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+      <td>4</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Hello World!</td>
+      <td>1</td>
+      <td>1.3</td>
+      <td>true</td>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+      <td>4</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Hello World!</td>
+      <td>1</td>
+      <td>1.3</td>
+      <td>true</td>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+      <td>4</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_5c41d_row0_col0,#T_5c41d_row0_col1,#T_5c41d_row1_col0,#T_5c41d_row1_col1,#T_5c41d_row2_col0,#T_5c41d_row2_col1,#T_5c41d_row3_col0,#T_5c41d_row3_col1,#T_5c41d_row4_col0,#T_5c41d_row4_col1,#T_5c41d_row5_col0,#T_5c41d_row5_col1,#T_5c41d_row6_col0,#T_5c41d_row6_col1,#T_5c41d_row7_col0,#T_5c41d_row7_col1,#T_5c41d_row8_col0,#T_5c41d_row8_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_5c41d_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_5c41d_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_5c41d_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_5c41d_row0_col1" class="data row0 col1" >"Hello World!"</td>
+            </tr>
+            <tr>
+                        <th id="T_5c41d_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_5c41d_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_5c41d_row1_col1" class="data row1 col1" >1</td>
+            </tr>
+            <tr>
+                        <th id="T_5c41d_level0_row2" class="row_heading level0 row2" >2</th>
+                        <td id="T_5c41d_row2_col0" class="data row2 col0" >_c2</td>
+                        <td id="T_5c41d_row2_col1" class="data row2 col1" >1.3</td>
+            </tr>
+            <tr>
+                        <th id="T_5c41d_level0_row3" class="row_heading level0 row3" >3</th>
+                        <td id="T_5c41d_row3_col0" class="data row3 col0" >_c3</td>
+                        <td id="T_5c41d_row3_col1" class="data row3 col1" >True</td>
+            </tr>
+            <tr>
+                        <th id="T_5c41d_level0_row4" class="row_heading level0 row4" >4</th>
+                        <td id="T_5c41d_row4_col0" class="data row4 col0" >_c4</td>
+                        <td id="T_5c41d_row4_col1" class="data row4 col1" >1</td>
+            </tr>
+            <tr>
+                        <th id="T_5c41d_level0_row5" class="row_heading level0 row5" >5</th>
+                        <td id="T_5c41d_row5_col0" class="data row5 col0" >_c5</td>
+                        <td id="T_5c41d_row5_col1" class="data row5 col1" >2</td>
+            </tr>
+            <tr>
+                        <th id="T_5c41d_level0_row6" class="row_heading level0 row6" >6</th>
+                        <td id="T_5c41d_row6_col0" class="data row6 col0" >_c6</td>
+                        <td id="T_5c41d_row6_col1" class="data row6 col1" >3</td>
+            </tr>
+            <tr>
+                        <th id="T_5c41d_level0_row7" class="row_heading level0 row7" >7</th>
+                        <td id="T_5c41d_row7_col0" class="data row7 col0" >_c7</td>
+                        <td id="T_5c41d_row7_col1" class="data row7 col1" >4</td>
+            </tr>
+            <tr>
+                        <th id="T_5c41d_level0_row8" class="row_heading level0 row8" >8</th>
+                        <td id="T_5c41d_row8_col0" class="data row8 col0" >_c8</td>
+                        <td id="T_5c41d_row8_col1" class="data row8 col1" >null</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 9 columns in 0.29 seconds<i><br><br>
+</div>
+<div class="section" id="event-attributes">
+<h1>Event Attributes<a class="headerlink" href="#event-attributes" title="Permalink to this headline">¶</a></h1>
+<p>In TQL expressions, attributes of timeline events are addressable as variables.  For example, Lethe is composed of the <code class="docutils literal notranslate"><span class="pre">bid</span></code> timeseries, which contains the attributes <code class="docutils literal notranslate"><span class="pre">ad_size</span></code>, <code class="docutils literal notranslate"><span class="pre">bid</span></code>, <code class="docutils literal notranslate"><span class="pre">event_time</span></code>, <code class="docutils literal notranslate"><span class="pre">ghosted</span></code>, <code class="docutils literal notranslate"><span class="pre">request_id</span></code>, <code class="docutils literal notranslate"><span class="pre">user_id</span></code>, and <code class="docutils literal notranslate"><span class="pre">won</span></code>.  These attributes are directly selectable using the expression language as variables, for example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;bid.ad_size&#39;</span><span class="p">,</span> 
+	<span class="s1">&#39;bid.bid&#39;</span><span class="p">,</span> 
+	<span class="s1">&#39;bid.ghosted&#39;</span><span class="p">,</span> 
+	<span class="s1">&#39;bid.request_id&#39;</span><span class="p">,</span> 
+	<span class="s1">&#39;bid.user_id&#39;</span><span class="p">,</span> 
+	<span class="s1">&#39;bid.won&#39;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+      <th>_c2</th>
+      <th>_c3</th>
+      <th>_c4</th>
+      <th>_c5</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>big</td>
+      <td>1.0</td>
+      <td>false</td>
+      <td>r13260</td>
+      <td>u252</td>
+      <td>true</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>big</td>
+      <td>1.0</td>
+      <td>false</td>
+      <td>r13376</td>
+      <td>u252</td>
+      <td>true</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_89127_row0_col0,#T_89127_row0_col1,#T_89127_row1_col0,#T_89127_row1_col1,#T_89127_row2_col0,#T_89127_row2_col1,#T_89127_row3_col0,#T_89127_row3_col1,#T_89127_row4_col0,#T_89127_row4_col1,#T_89127_row5_col0,#T_89127_row5_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_89127_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_89127_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_89127_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_89127_row0_col1" class="data row0 col1" >bid.ad_size</td>
+            </tr>
+            <tr>
+                        <th id="T_89127_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_89127_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_89127_row1_col1" class="data row1 col1" >bid.bid</td>
+            </tr>
+            <tr>
+                        <th id="T_89127_level0_row2" class="row_heading level0 row2" >2</th>
+                        <td id="T_89127_row2_col0" class="data row2 col0" >_c2</td>
+                        <td id="T_89127_row2_col1" class="data row2 col1" >bid.ghosted</td>
+            </tr>
+            <tr>
+                        <th id="T_89127_level0_row3" class="row_heading level0 row3" >3</th>
+                        <td id="T_89127_row3_col0" class="data row3 col0" >_c3</td>
+                        <td id="T_89127_row3_col1" class="data row3 col1" >bid.request_id</td>
+            </tr>
+            <tr>
+                        <th id="T_89127_level0_row4" class="row_heading level0 row4" >4</th>
+                        <td id="T_89127_row4_col0" class="data row4 col0" >_c4</td>
+                        <td id="T_89127_row4_col1" class="data row4 col1" >bid.user_id</td>
+            </tr>
+            <tr>
+                        <th id="T_89127_level0_row5" class="row_heading level0 row5" >5</th>
+                        <td id="T_89127_row5_col0" class="data row5 col0" >_c5</td>
+                        <td id="T_89127_row5_col1" class="data row5 col1" >bid.won</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 6 columns in 0.35 seconds<i><br><br>
+</div>
+<div class="section" id="booleans-and-logical-operators">
+<h1>Booleans and Logical Operators<a class="headerlink" href="#booleans-and-logical-operators" title="Permalink to this headline">¶</a></h1>
+<p>The expression language contains the case insensitive primitives <code class="docutils literal notranslate"><span class="pre">true</span></code> and <code class="docutils literal notranslate"><span class="pre">false</span></code>. Non-null, non-empty, non-zero values are also considered “truthy” and will be intepreted as true in a boolean context, such as in a where clause, The expression language has the native boolean operators <code class="docutils literal notranslate"><span class="pre">AND</span></code> and <code class="docutils literal notranslate"><span class="pre">OR</span></code> to express compound conditionals.  These may be used in isolation, or in conjunction with the <code class="docutils literal notranslate"><span class="pre">IF()</span></code> function to emit conditional values in columns.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;true&#39;</span><span class="p">,</span> <span class="c1">#primitives of true</span>
+	<span class="s1">&#39;FaLsE&#39;</span><span class="p">,</span> <span class="c1">#case insensitive primitives</span>
+	<span class="s1">&#39;1 OR &quot;non-empty string!&quot;&#39;</span><span class="p">,</span> <span class="c1"># &quot;truthy&quot; values with compound conditionals</span>
+	<span class="s1">&#39;0 AND &quot;&quot;&#39;</span><span class="p">,</span> <span class="c1"># &quot;falsey&quot; values</span>
+	<span class="s1">&#39;IF(bid.ad_size == &quot;big&quot;, &quot;HUGE&quot;, &quot;default&quot;)&#39;</span> <span class="c1">#the IF function </span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+      <th>_c2</th>
+      <th>_c3</th>
+      <th>_c4</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>true</td>
+      <td>false</td>
+      <td>true</td>
+      <td>false</td>
+      <td>default</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>true</td>
+      <td>false</td>
+      <td>true</td>
+      <td>false</td>
+      <td>HUGE</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>true</td>
+      <td>false</td>
+      <td>true</td>
+      <td>false</td>
+      <td>HUGE</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_0d0d6_row0_col0,#T_0d0d6_row0_col1,#T_0d0d6_row1_col0,#T_0d0d6_row1_col1,#T_0d0d6_row2_col0,#T_0d0d6_row2_col1,#T_0d0d6_row3_col0,#T_0d0d6_row3_col1,#T_0d0d6_row4_col0,#T_0d0d6_row4_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_0d0d6_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_0d0d6_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_0d0d6_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_0d0d6_row0_col1" class="data row0 col1" >true</td>
+            </tr>
+            <tr>
+                        <th id="T_0d0d6_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_0d0d6_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_0d0d6_row1_col1" class="data row1 col1" >FaLsE</td>
+            </tr>
+            <tr>
+                        <th id="T_0d0d6_level0_row2" class="row_heading level0 row2" >2</th>
+                        <td id="T_0d0d6_row2_col0" class="data row2 col0" >_c2</td>
+                        <td id="T_0d0d6_row2_col1" class="data row2 col1" >1 OR "non-empty string!"</td>
+            </tr>
+            <tr>
+                        <th id="T_0d0d6_level0_row3" class="row_heading level0 row3" >3</th>
+                        <td id="T_0d0d6_row3_col0" class="data row3 col0" >_c3</td>
+                        <td id="T_0d0d6_row3_col1" class="data row3 col1" >0 AND ""</td>
+            </tr>
+            <tr>
+                        <th id="T_0d0d6_level0_row4" class="row_heading level0 row4" >4</th>
+                        <td id="T_0d0d6_row4_col0" class="data row4 col0" >_c4</td>
+                        <td id="T_0d0d6_row4_col1" class="data row4 col1" >IF(bid.ad_size == "big", "HUGE", "default")</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 5 columns in 0.29 seconds<i><br><br>
+</div>
+<div class="section" id="math-functions">
+<h1>Math Functions<a class="headerlink" href="#math-functions" title="Permalink to this headline">¶</a></h1>
+<p>The Expression Language contains a basic set of mathematical operators and functions to cover basic numerical transformations.  For a full list of mathematical operations, go <a class="reference external" href="http://insert-url-to-math-operator-docs-here">here</a>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+  <span class="s1">&#39;1 * (3 + 4) / 2 % 2&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;EXP(1)&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;LOG(23, 2)&#39;</span><span class="p">,</span>
+  <span class="s1">&#39;PI()&#39;</span><span class="p">,</span> 
+  <span class="s1">&#39;SIN(45)&#39;</span><span class="p">,</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+      <th>_c2</th>
+      <th>_c3</th>
+      <th>_c4</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1.5</td>
+      <td>2.718281828459045</td>
+      <td>4.523561956057013</td>
+      <td>3.141592653589793</td>
+      <td>0.8509035245341184</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1.5</td>
+      <td>2.718281828459045</td>
+      <td>4.523561956057013</td>
+      <td>3.141592653589793</td>
+      <td>0.8509035245341184</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1.5</td>
+      <td>2.718281828459045</td>
+      <td>4.523561956057013</td>
+      <td>3.141592653589793</td>
+      <td>0.8509035245341184</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_72a41_row0_col0,#T_72a41_row0_col1,#T_72a41_row1_col0,#T_72a41_row1_col1,#T_72a41_row2_col0,#T_72a41_row2_col1,#T_72a41_row3_col0,#T_72a41_row3_col1,#T_72a41_row4_col0,#T_72a41_row4_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_72a41_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_72a41_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_72a41_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_72a41_row0_col1" class="data row0 col1" >1 * (3 + 4) / 2 % 2</td>
+            </tr>
+            <tr>
+                        <th id="T_72a41_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_72a41_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_72a41_row1_col1" class="data row1 col1" >EXP(1)</td>
+            </tr>
+            <tr>
+                        <th id="T_72a41_level0_row2" class="row_heading level0 row2" >2</th>
+                        <td id="T_72a41_row2_col0" class="data row2 col0" >_c2</td>
+                        <td id="T_72a41_row2_col1" class="data row2 col1" >LOG(23, 2)</td>
+            </tr>
+            <tr>
+                        <th id="T_72a41_level0_row3" class="row_heading level0 row3" >3</th>
+                        <td id="T_72a41_row3_col0" class="data row3 col0" >_c3</td>
+                        <td id="T_72a41_row3_col1" class="data row3 col1" >PI()</td>
+            </tr>
+            <tr>
+                        <th id="T_72a41_level0_row4" class="row_heading level0 row4" >4</th>
+                        <td id="T_72a41_row4_col0" class="data row4 col0" >_c4</td>
+                        <td id="T_72a41_row4_col1" class="data row4 col1" >SIN(45)</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 5 columns in 0.39 seconds<i><br><br>
+</div>
+<div class="section" id="statistics-random-numbers-and-hashing">
+<h1>Statistics, Random Numbers, and Hashing<a class="headerlink" href="#statistics-random-numbers-and-hashing" title="Permalink to this headline">¶</a></h1>
+<p>TODO: <code class="docutils literal notranslate"><span class="pre">PDF()</span></code>, <code class="docutils literal notranslate"><span class="pre">CDF()</span></code>, <code class="docutils literal notranslate"><span class="pre">iCDF()</span></code>, <code class="docutils literal notranslate"><span class="pre">RNG()</span></code>, <code class="docutils literal notranslate"><span class="pre">SAMPLE()</span></code>, <code class="docutils literal notranslate"><span class="pre">MD5()</span></code>, <code class="docutils literal notranslate"><span class="pre">RANDOM()</span></code>, etc.</p>
+</div>
+<div class="section" id="string-manipulation">
+<h1>String Manipulation<a class="headerlink" href="#string-manipulation" title="Permalink to this headline">¶</a></h1>
+<p>Some examples of common string manipulation operations:
+<code class="docutils literal notranslate"><span class="pre">CONCAT()</span></code>,  <code class="docutils literal notranslate"><span class="pre">UPPER()</span></code>,  <code class="docutils literal notranslate"><span class="pre">LOWER()</span></code>,  <code class="docutils literal notranslate"><span class="pre">COALESCE()</span></code>, <code class="docutils literal notranslate"><span class="pre">STRING_SPLIT()</span></code>,  <code class="docutils literal notranslate"><span class="pre">REGEX_EXTRACT()</span></code>,  <code class="docutils literal notranslate"><span class="pre">REGEX_REPLACE()</span></code></p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;bid.ad_size&#39;</span><span class="p">,</span> <span class="c1">#base attribute of ad size</span>
+	<span class="s1">&#39;UPPER(bid.ad_size)&#39;</span><span class="p">,</span> <span class="c1">#upper case </span>
+	<span class="s1">&#39;lower(bid.ad_size)&#39;</span><span class="p">,</span> <span class="c1">#lower case</span>
+	<span class="s1">&#39;COALESCE(bid.ad_size, &quot;UNKNOWN&quot;)&#39;</span><span class="p">,</span> <span class="c1">#coalesce nulls  </span>
+	<span class="s1">&#39;STRING_SPLIT(bid.ad_size, &quot;i&quot;)&#39;</span><span class="p">,</span> <span class="c1">#split strings into arrays</span>
+	<span class="s1">&#39;REGEX_EXTRACT(bid.ad_size, &quot;[a-zA-Z0-9]&quot;, 0)&#39;</span><span class="p">,</span> <span class="c1">#extract a regex group</span>
+	<span class="s1">&#39;REGEX_REPLACE(bid.ad_size, [&quot;b&quot;, &quot;_&quot;, &quot;i&quot;, &quot;xx&quot;])&#39;</span><span class="p">,</span> <span class="c1">#replace characters in a string</span>
+	<span class="s1">&#39;TO_STRING(1.3)&#39;</span><span class="p">,</span> <span class="c1">#cast anything to a string</span>
+	<span class="s1">&#39;bid.ad_size == &quot;BIG&quot;&#39;</span> <span class="c1">#string equality</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+      <th>_c2</th>
+      <th>_c3</th>
+      <th>_c4</th>
+      <th>_c5</th>
+      <th>_c6</th>
+      <th>_c7</th>
+      <th>_c8</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>UNKNOWN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>1.3</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>big</td>
+      <td>BIG</td>
+      <td>big</td>
+      <td>big</td>
+      <td>[b,g]</td>
+      <td>b</td>
+      <td>_xxg</td>
+      <td>1.3</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>big</td>
+      <td>BIG</td>
+      <td>big</td>
+      <td>big</td>
+      <td>[b,g]</td>
+      <td>b</td>
+      <td>_xxg</td>
+      <td>1.3</td>
+      <td>false</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_7bcf4_row0_col0,#T_7bcf4_row0_col1,#T_7bcf4_row1_col0,#T_7bcf4_row1_col1,#T_7bcf4_row2_col0,#T_7bcf4_row2_col1,#T_7bcf4_row3_col0,#T_7bcf4_row3_col1,#T_7bcf4_row4_col0,#T_7bcf4_row4_col1,#T_7bcf4_row5_col0,#T_7bcf4_row5_col1,#T_7bcf4_row6_col0,#T_7bcf4_row6_col1,#T_7bcf4_row7_col0,#T_7bcf4_row7_col1,#T_7bcf4_row8_col0,#T_7bcf4_row8_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_7bcf4_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_7bcf4_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_7bcf4_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_7bcf4_row0_col1" class="data row0 col1" >bid.ad_size</td>
+            </tr>
+            <tr>
+                        <th id="T_7bcf4_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_7bcf4_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_7bcf4_row1_col1" class="data row1 col1" >UPPER(bid.ad_size)</td>
+            </tr>
+            <tr>
+                        <th id="T_7bcf4_level0_row2" class="row_heading level0 row2" >2</th>
+                        <td id="T_7bcf4_row2_col0" class="data row2 col0" >_c2</td>
+                        <td id="T_7bcf4_row2_col1" class="data row2 col1" >lower(bid.ad_size)</td>
+            </tr>
+            <tr>
+                        <th id="T_7bcf4_level0_row3" class="row_heading level0 row3" >3</th>
+                        <td id="T_7bcf4_row3_col0" class="data row3 col0" >_c3</td>
+                        <td id="T_7bcf4_row3_col1" class="data row3 col1" >COALESCE(bid.ad_size, "UNKNOWN")</td>
+            </tr>
+            <tr>
+                        <th id="T_7bcf4_level0_row4" class="row_heading level0 row4" >4</th>
+                        <td id="T_7bcf4_row4_col0" class="data row4 col0" >_c4</td>
+                        <td id="T_7bcf4_row4_col1" class="data row4 col1" >STRING_SPLIT(bid.ad_size, "i")</td>
+            </tr>
+            <tr>
+                        <th id="T_7bcf4_level0_row5" class="row_heading level0 row5" >5</th>
+                        <td id="T_7bcf4_row5_col0" class="data row5 col0" >_c5</td>
+                        <td id="T_7bcf4_row5_col1" class="data row5 col1" >REGEX_EXTRACT(bid.ad_size, "[a-zA-Z0-9]", 0)</td>
+            </tr>
+            <tr>
+                        <th id="T_7bcf4_level0_row6" class="row_heading level0 row6" >6</th>
+                        <td id="T_7bcf4_row6_col0" class="data row6 col0" >_c6</td>
+                        <td id="T_7bcf4_row6_col1" class="data row6 col1" >REGEX_REPLACE(bid.ad_size, ["b", "_", "i", "xx"])</td>
+            </tr>
+            <tr>
+                        <th id="T_7bcf4_level0_row7" class="row_heading level0 row7" >7</th>
+                        <td id="T_7bcf4_row7_col0" class="data row7 col0" >_c7</td>
+                        <td id="T_7bcf4_row7_col1" class="data row7 col1" >TO_STRING(1.3)</td>
+            </tr>
+            <tr>
+                        <th id="T_7bcf4_level0_row8" class="row_heading level0 row8" >8</th>
+                        <td id="T_7bcf4_row8_col0" class="data row8 col0" >_c8</td>
+                        <td id="T_7bcf4_row8_col1" class="data row8 col1" >bid.ad_size == "BIG"</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 9 columns in 0.37 seconds<i><br><br>
+</div>
+<div class="section" id="date-time-manipulation">
+<h1>Date/Time Manipulation<a class="headerlink" href="#date-time-manipulation" title="Permalink to this headline">¶</a></h1>
+<p>TODO<code class="docutils literal notranslate"><span class="pre">NOW()</span></code>, <code class="docutils literal notranslate"><span class="pre">DATE()</span></code>, <code class="docutils literal notranslate"><span class="pre">TO_DATETIME()</span></code>, <code class="docutils literal notranslate"><span class="pre">DAY_OF_WEEK()</span></code>, <code class="docutils literal notranslate"><span class="pre">MILLIS()</span></code>, <code class="docutils literal notranslate"><span class="pre">FROM_UNIXTIME()</span></code></p>
+</div>
+<div class="section" id="array-manipulation">
+<h1>Array Manipulation<a class="headerlink" href="#array-manipulation" title="Permalink to this headline">¶</a></h1>
+<p>TODO<code class="docutils literal notranslate"><span class="pre">MAP()</span></code>, <code class="docutils literal notranslate"><span class="pre">REDUCE()</span></code>, <code class="docutils literal notranslate"><span class="pre">FILTER()</span></code>, <code class="docutils literal notranslate"><span class="pre">RANGE()</span></code>, <code class="docutils literal notranslate"><span class="pre">SIZE()</span></code>, <code class="docutils literal notranslate"><span class="pre">SORT()</span></code>, <code class="docutils literal notranslate"><span class="pre">MIN()</span></code>, <code class="docutils literal notranslate"><span class="pre">MAX()</span></code>, etc.</p>
+</div>
+<div class="section" id="local-variables-and-multi-statement-expressions">
+<h1>Local Variables and Multi-Statement Expressions<a class="headerlink" href="#local-variables-and-multi-statement-expressions" title="Permalink to this headline">¶</a></h1>
+<p>Long transformations can be broken up into multiple statements, delimited by a <code class="docutils literal notranslate"><span class="pre">;</span></code> for readability.  For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">positive_value=1.0;</span>
+<span class="s1">negative_value=-1.0;</span>
+<span class="s1">ad_size=COALESCE(UPPER(bid.ad_size), &#39;UNKNOWN&#39;);</span>
+<span class="s1">if(bid.ad_size == &#39;BIG&#39;, positive_value, negative_value)</span>
+<span class="s1">&#39;&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="c1">#In multi-statement expressions, the last statement in the expression must return a value.</span>
+</pre></div>
+</div>
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>-1.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>-1.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-1.0</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_b94cb_row0_col0,#T_b94cb_row0_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_b94cb_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_b94cb_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_b94cb_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_b94cb_row0_col1" class="data row0 col1" >
+positive_value=1.0;
+negative_value=-1.0;
+ad_size=COALESCE(UPPER(bid.ad_size), 'UNKNOWN');
+if(bid.ad_size == 'BIG', positive_value, negative_value)
+</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 1 columns in 0.39 seconds<i><br><br>
+</div>
+<div class="section" id="timeline-scanning-operations">
+<h1>Timeline Scanning Operations<a class="headerlink" href="#timeline-scanning-operations" title="Permalink to this headline">¶</a></h1>
+<p>Because of TQL’s data processing model, the entire timeline is available in the context of each event row being processed.  This makes it simple to write expressions that summarize the activity on a timeline, or compare activity on a timeline to the current event.  For Example:</p>
+</div>
+<div class="section" id="the-predict-function">
+<h1>The PREDICT Function<a class="headerlink" href="#the-predict-function" title="Permalink to this headline">¶</a></h1>
+<p>Models are first-class citizens of TQL, and are accessible via the native function <code class="docutils literal notranslate"><span class="pre">PREDICT()</span></code>. Models are published into TQL with the column expressions used to produce the features, and because TQL expressions are applied to timeline events only when a query is executed, TQL can create result sets with model predictions as well as other attributes or metrics.  For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;bid.ad_size&#39;</span><span class="p">,</span>
+	<span class="s1">&#39;PREDICT(&quot;my_model&quot;)&#39;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Since the output of <code class="docutils literal notranslate"><span class="pre">PREDICT()</span></code> is simply a floating point number, it can be further manipulated using the expression language.  Multiple models can even be composed together to compute derived values.  For example, perhaps you would like to join together your predictions of winrate and conversion rate:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;PREDICT(&#39;</span><span class="n">winrate_model</span><span class="s1">&#39;) * PREDICT(&#39;</span><span class="n">coversion_rate_model</span><span class="s1">&#39;)&#39;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Models must be previously published into TQL.  Refer to <span class="xref myst">Model Training and Publishing</span> guide for more information on this topic.</p>
+</div>
+<div class="section" id="the-set-property-function">
+<h1>The SET_PROPERTY Function<a class="headerlink" href="#the-set-property-function" title="Permalink to this headline">¶</a></h1>
+<p>The native function <code class="docutils literal notranslate"><span class="pre">SET_PROPERTY()</span></code>can be used to temporarily change an attribute of the input event for the rest of the execution of the current expression.  For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;bid.ad_size&#39;</span><span class="p">,</span>
+	<span class="s1">&#39;SET_PROPERTY(&quot;bid.ad_size&quot;, &quot;tiny&quot;); bid.ad_size&#39;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>None</td>
+      <td>tiny</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>big</td>
+      <td>tiny</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>big</td>
+      <td>tiny</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_af3f7_row0_col0,#T_af3f7_row0_col1,#T_af3f7_row1_col0,#T_af3f7_row1_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_af3f7_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_af3f7_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_af3f7_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_af3f7_row0_col1" class="data row0 col1" >bid.ad_size</td>
+            </tr>
+            <tr>
+                        <th id="T_af3f7_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_af3f7_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_af3f7_row1_col1" class="data row1 col1" >SET_PROPERTY("bid.ad_size", "tiny"); bid.ad_size</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 2 columns in 0.31 seconds<i><br><br>
+<p>This functionality is powerful in conjunction with the <a class="reference external" href="#Model-Predict-Function">Model Predict Function</a>, allowing you to easily write queries that make counterfactual predictions.  For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;bid.ad_size&#39;</span><span class="p">,</span>
+	<span class="s1">&#39;SET_PROPERTY(&quot;bid.ad_size&quot;, &quot;tiny&quot;); bid.ad_size&#39;</span> 
+	<span class="s1">&#39;PREDICT(&quot;my_winrate_model&quot;)&#39;</span><span class="p">,</span> 
+	<span class="s1">&#39;SET_PROPERTY(&quot;bid.ad_size&quot;, &quot;tiny&quot;); PREDICT(&quot;my_winrate_model&quot;)&#39;</span> 
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="comments">
+<h1>Comments<a class="headerlink" href="#comments" title="Permalink to this headline">¶</a></h1>
+<p>Expressions may contain comments.  Both inline and multi-line comments are supported:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">ad_size = bid.ad_size; //this is a comment</span>
+<span class="s1">/*</span>
+<span class="s1">this is a comment...</span>
+<span class="s1">...on multiple lines</span>
+<span class="s1">*/</span>
+<span class="s1">ad_size </span>
+<span class="s1">&#39;&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>big</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>big</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_5ecad_row0_col0,#T_5ecad_row0_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_5ecad_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_5ecad_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_5ecad_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_5ecad_row0_col1" class="data row0 col1" >
+ad_size = bid.ad_size; //this is a comment
+/*
+this is a comment...
+...on multiple lines
+*/
+ad_size 
+</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 1 columns in 0.31 seconds<i><br><br>
+</div>
+<div class="section" id="user-defined-functions-udfs">
+<h1>User Defined Functions (UDFs)<a class="headerlink" href="#user-defined-functions-udfs" title="Permalink to this headline">¶</a></h1>
+<p>In addition to TQL’s library of built-in functions, the user can write additional functions to extend the language’s capabilities with custom behavior.  Functions are defined with the syntax <code class="docutils literal notranslate"><span class="pre">function(...){</span> <span class="pre">...</span> <span class="pre">}</span></code>.  A function may also provide an optional doc string preceding it.  For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+  <span class="s1">&#39;clean_ad_size()&#39;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">udf</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">function clean_ad_size() {</span>
+<span class="s1">  COALESCE(UPPER(bid.ad_size), &#39;UNKNOWN&#39;)</span>
+<span class="s1">}</span>
+<span class="s1">&#39;&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> 
+</pre></div>
+</div>
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>UNKNOWN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>BIG</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>BIG</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_95a53_row0_col0,#T_95a53_row0_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_95a53_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_95a53_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_95a53_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_95a53_row0_col1" class="data row0 col1" >clean_ad_size()</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 1 columns in 0.39 seconds<i><br><br>
+<p>Just like regular expressions, UDFs may contain multiple statements, delimited by a <code class="docutils literal notranslate"><span class="pre">;</span></code>, in which case the last statement must return a value.  UDFs may also define input arguments.  For example:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+  <span class="s1">&#39;circumference(3)&#39;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">udf</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">function circumference(r) {</span>
+<span class="s1">	diameter = 2 * r;</span>
+<span class="s1">	circ = diameter *  PI();</span>
+<span class="s1">	circ</span>
+<span class="s1">}</span>
+<span class="s1">&#39;&#39;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> 
+</pre></div>
+</div>
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>18.84955592153876</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>18.84955592153876</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>18.84955592153876</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_03774_row0_col0,#T_03774_row0_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_03774_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_03774_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_03774_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_03774_row0_col1" class="data row0 col1" >circumference(3)</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 1 columns in 0.32 seconds<i><br><br>
+</div>
+<div class="section" id="compile-and-runtime-error-handling">
+<h1>Compile and Runtime Error Handling<a class="headerlink" href="#compile-and-runtime-error-handling" title="Permalink to this headline">¶</a></h1>
+<p>If an expression fails to compile, an error will be shown when trying to submit the query.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#For example, &#39;blah&#39;  has no meaning here:</span>
+<span class="n">select</span><span class="p">(</span><span class="s1">&#39;blah&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Encountered 1 expression compilation error: Line 1:0 Unknown variable &#39;@blah&#39; (in column _c0)
+Expression error: Line 1:0 Unknown variable &#39;@blah&#39; (in column _c0)
+blah
+^
+
+
+
+
+---------------------------------------------------------------------------
+
+TQLAnalysisException                      Traceback (most recent call last)
+
+~/dev/.virtualenvs/noumena-dev/lib/python3.7/site-packages/IPython/core/formatters.py in __call__(self, obj)
+    343             method = get_real_method(obj, self.print_method)
+    344             if method is not None:
+--&gt; 345                 return method()
+    346             return None
+    347         else:
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in _repr_html_(self)
+    861 
+    862     def _repr_html_(self):
+--&gt; 863         return self.submit(interactive=self._interactive)._repr_html_()
+    864 
+    865     def __iter__(self):
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in submit(self, interactive, wait, print_payloads, analyze, spark)
+    757         from noumena.tql import icarus
+    758         start = time.time()
+--&gt; 759         submit_reply = icarus.post(&#39;query/submit&#39;, self.json(), print_json=print_payloads)
+    760         if interactive:
+    761             #if interactive, the server reply will already contain the resultset
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in post(url, json_data, files_data, data, print_json)
+     13         print(json.dumps(json_data))
+     14     resp = requests.post(url, data=data, json=json_data, files=files_data)
+---&gt; 15     return _handle_response(url, resp, print_json=print_json)
+     16 
+     17 
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in _handle_response(url, resp, print_json)
+     69             else:
+     70                 print(reason)
+---&gt; 71             raise TQLAnalysisException(reason)
+     72         else:
+     73             msg = &#39;&#39;
+
+
+TQLAnalysisException: Encountered 1 expression compilation error: Line 1:0 Unknown variable &#39;@blah&#39; (in column _c0)Expression error: Line 1:0 Unknown variable &#39;@blah&#39; (in column _c0)
+blah
+^
+
+
+
+
+
+Query&lt;project_id=4, 
+interactive=None, 
+timeline_limit=None, 
+row_limit=None, 
+from_filters=None, 
+where_filters=None, 
+columns=[{&#39;name&#39;: None, &#39;expression&#39;: &#39;blah&#39;, &#39;type&#39;: &#39;METADATA&#39;}], 
+sampling=None&gt;
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#In this example, the `LOG` function requires two operands, the input number and the log base to use:</span>
+<span class="n">select</span><span class="p">(</span><span class="s1">&#39;log(3)&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>Encountered 1 expression compilation error: Line 1:0 LOG function needs 2 operands (in column _c0)
+Expression error: Line 1:0 LOG function needs 2 operands (in column _c0)
+log(3)
+^
+
+
+
+
+---------------------------------------------------------------------------
+
+TQLAnalysisException                      Traceback (most recent call last)
+
+~/dev/.virtualenvs/noumena-dev/lib/python3.7/site-packages/IPython/core/formatters.py in __call__(self, obj)
+    343             method = get_real_method(obj, self.print_method)
+    344             if method is not None:
+--&gt; 345                 return method()
+    346             return None
+    347         else:
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in _repr_html_(self)
+    861 
+    862     def _repr_html_(self):
+--&gt; 863         return self.submit(interactive=self._interactive)._repr_html_()
+    864 
+    865     def __iter__(self):
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in submit(self, interactive, wait, print_payloads, analyze, spark)
+    757         from noumena.tql import icarus
+    758         start = time.time()
+--&gt; 759         submit_reply = icarus.post(&#39;query/submit&#39;, self.json(), print_json=print_payloads)
+    760         if interactive:
+    761             #if interactive, the server reply will already contain the resultset
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in post(url, json_data, files_data, data, print_json)
+     13         print(json.dumps(json_data))
+     14     resp = requests.post(url, data=data, json=json_data, files=files_data)
+---&gt; 15     return _handle_response(url, resp, print_json=print_json)
+     16 
+     17 
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in _handle_response(url, resp, print_json)
+     69             else:
+     70                 print(reason)
+---&gt; 71             raise TQLAnalysisException(reason)
+     72         else:
+     73             msg = &#39;&#39;
+
+
+TQLAnalysisException: Encountered 1 expression compilation error: Line 1:0 LOG function needs 2 operands (in column _c0)Expression error: Line 1:0 LOG function needs 2 operands (in column _c0)
+log(3)
+^
+
+
+
+
+
+Query&lt;project_id=4, 
+interactive=None, 
+timeline_limit=None, 
+row_limit=None, 
+from_filters=None, 
+where_filters=None, 
+columns=[{&#39;name&#39;: None, &#39;expression&#39;: &#39;log(3)&#39;, &#39;type&#39;: &#39;METADATA&#39;}], 
+sampling=None&gt;
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1">#In this example, we simply forgot a closing parenthesis:</span>
+<span class="n">select</span><span class="p">(</span><span class="s1">&#39;log(3&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="s1">&#39;lethe&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>---------------------------------------------------------------------------
+
+TQLAnalysisException                      Traceback (most recent call last)
+
+&lt;ipython-input-22-aba21e9e1ffb&gt; in &lt;module&gt;
+      1 #In this example, we simply forgot a closing parenthesis:
+----&gt; 2 select(&#39;log(3&#39;).from_events(&#39;lethe&#39;)
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in from_events(self, identifier, *types)
+    124         Returns: the current TQL query instance for further chaining/modification
+    125         &quot;&quot;&quot;
+--&gt; 126         self._project = self._resolve_project(identifier)
+    127         self.spec[&#39;project_id&#39;] = self._project.get_id()
+    128         #validate event types are valid
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in _resolve_project(self, identifier)
+    212     def _resolve_project(self, identifier):
+    213         from noumena.tql.timelines import load_table
+--&gt; 214         table = load_table(identifier)
+    215         if not table:
+    216             raise Exception(f&#39;could not find table &quot;{identifier}&quot;&#39;)
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/timelines.py in load_table(project_identifier, fail_if_not_found)
+     88     project = Project._find(project_identifier)
+     89     if not project and fail_if_not_found:
+---&gt; 90         raise TQLAnalysisException(f&#39;table {project_identifier} not found.&#39;)
+     91     return project
+     92 
+
+
+TQLAnalysisException: table lethe not found.
+</pre></div>
+</div>
+<p>However, if an expression compiles successfully but fails during evaluation, then the result for that row will be null.  In this example, <code class="docutils literal notranslate"><span class="pre">upper(bid.ad_size)</span></code> returns null because some events rows do not have ad size defined at all.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span>
+	<span class="s1">&#39;bid.ad_size&#39;</span><span class="p">,</span> 
+	<span class="s1">&#39;upper(bid.ad_size)&#39;</span>
+<span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>big</td>
+      <td>BIG</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>big</td>
+      <td>BIG</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_01c26_row0_col0,#T_01c26_row0_col1,#T_01c26_row1_col0,#T_01c26_row1_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_01c26_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_01c26_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_01c26_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_01c26_row0_col1" class="data row0 col1" >bid.ad_size</td>
+            </tr>
+            <tr>
+                        <th id="T_01c26_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_01c26_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_01c26_row1_col1" class="data row1 col1" >upper(bid.ad_size)</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 2 columns in 0.31 seconds<i><br><br>
+</div>
+<div class="section" id="tql-expression-debugger">
+<h1>TQL Expression Debugger<a class="headerlink" href="#tql-expression-debugger" title="Permalink to this headline">¶</a></h1>
+<p>TQL ships with a debugger to help you write expressions in Jupyter Notebooks.  To install the debugger, use the noumena command line tool:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$. noumena install-extensions
+</pre></div>
+</div>
+<p>To invoke the debugger, simply use the TQL built-in function <code class="docutils literal notranslate"><span class="pre">debugger()</span></code>, passing in a project id or name:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">debugger</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You can also invoke the debugger in the context of a TQL query, using it’s method.  When invoked this way, the debugger will be invoked with whatever query context you provide, including where clauses, unions, etc:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;bid.ad_size&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span><span class="o">.</span><span class="n">debugger</span><span class="p">()</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="where-to-next">
+<h1>Where To Next?<a class="headerlink" href="#where-to-next" title="Permalink to this headline">¶</a></h1>
+<p>Browse the <span class="xref myst"><strong>expression language cheat sheet</strong></span>,  and the full <span class="xref myst"><strong>expression function reference</strong></span>.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, various.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

@@ -1,0 +1,1346 @@
+## The TQL Expression Language
+The expression language is the core of TQL's data processing engine.  Expressions are written as Python strings and express a one-to-one transformation between an input timeline event object and a piece of output data.  These transformations form the building blocks of all TQL data processing queries.
+
+The language has strong syntactic similarities to SQL (basic functions, record-level structure) and Python (variables, list operations/aggregations, lambda/inline functions, user-defined functions). However, the expression language has several advantages:
+
+-   **Performant**: TQL Expressions are compiled into Java byte code and hence, are very fast.
+-   **Lazily Evaluated**: TQL Expressions are applied directly to raw timelines and events at query time, meaning all datasets are dynamically extracted from Timelines, eliminating the need for hard-to-maintain ETL pipelines.
+-   **Production-ready**: Trained ML Models deployed using TQL also store all the expressions expressions used to transform raw events into the training dataset, meaning feature extraction at scoring time is already built into the model.  
+
+TQL Expressions only exist in the context of a project and query.  For this guide, we will the demo project **lethe** (id=4) to learn the language.  Lethe represents a typical online advertising funnel, with a set of online ad auctions `bid`, a set of website activity logs  `activity`, and static user demographics `user`.  Each Timeline represents the total of all observed events for a particular user.  For this guide we will be manipulating data primarily from the `bid` timeseries.  
+
+Further reference:
+[**Expression language cheat sheet**](TODO),  and the full [**expression function reference**](TODO)
+
+
+```python
+from noumena.tql import *
+```
+
+    ------------------------------------------------------------------
+               Version: 20.1.16-SNAPSHOT
+     Version Timestamp: 2021-07-21 17:34:23
+           Version Age: 17 hours, 8 minutes, 1 seconds
+       Filesystem Root: /Users/zkozick/.noumena/files
+     Working Directory: /Users/zkozick/.noumena
+    Configuration File: /Users/zkozick/.noumena/noumena_conf.yml
+           Api Gateway: http://localhost:9000
+        Service Status: Icarus: ONLINE, Daedalus: ONLINE
+        Service Uptime: 1 days, 4 minutes, 4 seconds
+    ------------------------------------------------------------------
+
+
+## Literals
+TQL accepts string, boolean, integer, decimal, array, and null literals.  For example:
+
+
+```python
+select(
+	'"Hello World!"', 
+	1, 
+	1.3, 
+	True,
+	[1,2,3,4],
+	None
+).from_events(4).limit(3)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+      <th>_c2</th>
+      <th>_c3</th>
+      <th>_c4</th>
+      <th>_c5</th>
+      <th>_c6</th>
+      <th>_c7</th>
+      <th>_c8</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Hello World!</td>
+      <td>1</td>
+      <td>1.3</td>
+      <td>true</td>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+      <td>4</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Hello World!</td>
+      <td>1</td>
+      <td>1.3</td>
+      <td>true</td>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+      <td>4</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Hello World!</td>
+      <td>1</td>
+      <td>1.3</td>
+      <td>true</td>
+      <td>1</td>
+      <td>2</td>
+      <td>3</td>
+      <td>4</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_5c41d_row0_col0,#T_5c41d_row0_col1,#T_5c41d_row1_col0,#T_5c41d_row1_col1,#T_5c41d_row2_col0,#T_5c41d_row2_col1,#T_5c41d_row3_col0,#T_5c41d_row3_col1,#T_5c41d_row4_col0,#T_5c41d_row4_col1,#T_5c41d_row5_col0,#T_5c41d_row5_col1,#T_5c41d_row6_col0,#T_5c41d_row6_col1,#T_5c41d_row7_col0,#T_5c41d_row7_col1,#T_5c41d_row8_col0,#T_5c41d_row8_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_5c41d_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_5c41d_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_5c41d_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_5c41d_row0_col1" class="data row0 col1" >"Hello World!"</td>
+            </tr>
+            <tr>
+                        <th id="T_5c41d_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_5c41d_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_5c41d_row1_col1" class="data row1 col1" >1</td>
+            </tr>
+            <tr>
+                        <th id="T_5c41d_level0_row2" class="row_heading level0 row2" >2</th>
+                        <td id="T_5c41d_row2_col0" class="data row2 col0" >_c2</td>
+                        <td id="T_5c41d_row2_col1" class="data row2 col1" >1.3</td>
+            </tr>
+            <tr>
+                        <th id="T_5c41d_level0_row3" class="row_heading level0 row3" >3</th>
+                        <td id="T_5c41d_row3_col0" class="data row3 col0" >_c3</td>
+                        <td id="T_5c41d_row3_col1" class="data row3 col1" >True</td>
+            </tr>
+            <tr>
+                        <th id="T_5c41d_level0_row4" class="row_heading level0 row4" >4</th>
+                        <td id="T_5c41d_row4_col0" class="data row4 col0" >_c4</td>
+                        <td id="T_5c41d_row4_col1" class="data row4 col1" >1</td>
+            </tr>
+            <tr>
+                        <th id="T_5c41d_level0_row5" class="row_heading level0 row5" >5</th>
+                        <td id="T_5c41d_row5_col0" class="data row5 col0" >_c5</td>
+                        <td id="T_5c41d_row5_col1" class="data row5 col1" >2</td>
+            </tr>
+            <tr>
+                        <th id="T_5c41d_level0_row6" class="row_heading level0 row6" >6</th>
+                        <td id="T_5c41d_row6_col0" class="data row6 col0" >_c6</td>
+                        <td id="T_5c41d_row6_col1" class="data row6 col1" >3</td>
+            </tr>
+            <tr>
+                        <th id="T_5c41d_level0_row7" class="row_heading level0 row7" >7</th>
+                        <td id="T_5c41d_row7_col0" class="data row7 col0" >_c7</td>
+                        <td id="T_5c41d_row7_col1" class="data row7 col1" >4</td>
+            </tr>
+            <tr>
+                        <th id="T_5c41d_level0_row8" class="row_heading level0 row8" >8</th>
+                        <td id="T_5c41d_row8_col0" class="data row8 col0" >_c8</td>
+                        <td id="T_5c41d_row8_col1" class="data row8 col1" >null</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 9 columns in 0.29 seconds<i><br><br>
+
+
+
+## Event Attributes
+In TQL expressions, attributes of timeline events are addressable as variables.  For example, Lethe is composed of the `bid` timeseries, which contains the attributes `ad_size`, `bid`, `event_time`, `ghosted`, `request_id`, `user_id`, and `won`.  These attributes are directly selectable using the expression language as variables, for example: 
+
+
+```python
+select(
+	'bid.ad_size', 
+	'bid.bid', 
+	'bid.ghosted', 
+	'bid.request_id', 
+	'bid.user_id', 
+	'bid.won'
+).from_events(4).limit(3)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+      <th>_c2</th>
+      <th>_c3</th>
+      <th>_c4</th>
+      <th>_c5</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>big</td>
+      <td>1.0</td>
+      <td>false</td>
+      <td>r13260</td>
+      <td>u252</td>
+      <td>true</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>big</td>
+      <td>1.0</td>
+      <td>false</td>
+      <td>r13376</td>
+      <td>u252</td>
+      <td>true</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_89127_row0_col0,#T_89127_row0_col1,#T_89127_row1_col0,#T_89127_row1_col1,#T_89127_row2_col0,#T_89127_row2_col1,#T_89127_row3_col0,#T_89127_row3_col1,#T_89127_row4_col0,#T_89127_row4_col1,#T_89127_row5_col0,#T_89127_row5_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_89127_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_89127_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_89127_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_89127_row0_col1" class="data row0 col1" >bid.ad_size</td>
+            </tr>
+            <tr>
+                        <th id="T_89127_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_89127_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_89127_row1_col1" class="data row1 col1" >bid.bid</td>
+            </tr>
+            <tr>
+                        <th id="T_89127_level0_row2" class="row_heading level0 row2" >2</th>
+                        <td id="T_89127_row2_col0" class="data row2 col0" >_c2</td>
+                        <td id="T_89127_row2_col1" class="data row2 col1" >bid.ghosted</td>
+            </tr>
+            <tr>
+                        <th id="T_89127_level0_row3" class="row_heading level0 row3" >3</th>
+                        <td id="T_89127_row3_col0" class="data row3 col0" >_c3</td>
+                        <td id="T_89127_row3_col1" class="data row3 col1" >bid.request_id</td>
+            </tr>
+            <tr>
+                        <th id="T_89127_level0_row4" class="row_heading level0 row4" >4</th>
+                        <td id="T_89127_row4_col0" class="data row4 col0" >_c4</td>
+                        <td id="T_89127_row4_col1" class="data row4 col1" >bid.user_id</td>
+            </tr>
+            <tr>
+                        <th id="T_89127_level0_row5" class="row_heading level0 row5" >5</th>
+                        <td id="T_89127_row5_col0" class="data row5 col0" >_c5</td>
+                        <td id="T_89127_row5_col1" class="data row5 col1" >bid.won</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 6 columns in 0.35 seconds<i><br><br>
+
+
+
+## Booleans and Logical Operators
+The expression language contains the case insensitive primitives `true` and `false`. Non-null, non-empty, non-zero values are also considered "truthy" and will be intepreted as true in a boolean context, such as in a where clause, The expression language has the native boolean operators `AND` and `OR` to express compound conditionals.  These may be used in isolation, or in conjunction with the `IF()` function to emit conditional values in columns.
+
+
+```python
+select(
+	'true', #primitives of true
+	'FaLsE', #case insensitive primitives
+	'1 OR "non-empty string!"', # "truthy" values with compound conditionals
+	'0 AND ""', # "falsey" values
+	'IF(bid.ad_size == "big", "HUGE", "default")' #the IF function 
+).from_events(4).limit(3)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+      <th>_c2</th>
+      <th>_c3</th>
+      <th>_c4</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>true</td>
+      <td>false</td>
+      <td>true</td>
+      <td>false</td>
+      <td>default</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>true</td>
+      <td>false</td>
+      <td>true</td>
+      <td>false</td>
+      <td>HUGE</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>true</td>
+      <td>false</td>
+      <td>true</td>
+      <td>false</td>
+      <td>HUGE</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_0d0d6_row0_col0,#T_0d0d6_row0_col1,#T_0d0d6_row1_col0,#T_0d0d6_row1_col1,#T_0d0d6_row2_col0,#T_0d0d6_row2_col1,#T_0d0d6_row3_col0,#T_0d0d6_row3_col1,#T_0d0d6_row4_col0,#T_0d0d6_row4_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_0d0d6_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_0d0d6_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_0d0d6_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_0d0d6_row0_col1" class="data row0 col1" >true</td>
+            </tr>
+            <tr>
+                        <th id="T_0d0d6_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_0d0d6_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_0d0d6_row1_col1" class="data row1 col1" >FaLsE</td>
+            </tr>
+            <tr>
+                        <th id="T_0d0d6_level0_row2" class="row_heading level0 row2" >2</th>
+                        <td id="T_0d0d6_row2_col0" class="data row2 col0" >_c2</td>
+                        <td id="T_0d0d6_row2_col1" class="data row2 col1" >1 OR "non-empty string!"</td>
+            </tr>
+            <tr>
+                        <th id="T_0d0d6_level0_row3" class="row_heading level0 row3" >3</th>
+                        <td id="T_0d0d6_row3_col0" class="data row3 col0" >_c3</td>
+                        <td id="T_0d0d6_row3_col1" class="data row3 col1" >0 AND ""</td>
+            </tr>
+            <tr>
+                        <th id="T_0d0d6_level0_row4" class="row_heading level0 row4" >4</th>
+                        <td id="T_0d0d6_row4_col0" class="data row4 col0" >_c4</td>
+                        <td id="T_0d0d6_row4_col1" class="data row4 col1" >IF(bid.ad_size == "big", "HUGE", "default")</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 5 columns in 0.29 seconds<i><br><br>
+
+
+
+## Math Functions
+The Expression Language contains a basic set of mathematical operators and functions to cover basic numerical transformations.  For a full list of mathematical operations, go [here](http://insert-url-to-math-operator-docs-here).
+
+
+```python
+select(
+  '1 * (3 + 4) / 2 % 2',
+  'EXP(1)',
+  'LOG(23, 2)',
+  'PI()', 
+  'SIN(45)',
+).from_events(4).limit(3)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+      <th>_c2</th>
+      <th>_c3</th>
+      <th>_c4</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1.5</td>
+      <td>2.718281828459045</td>
+      <td>4.523561956057013</td>
+      <td>3.141592653589793</td>
+      <td>0.8509035245341184</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1.5</td>
+      <td>2.718281828459045</td>
+      <td>4.523561956057013</td>
+      <td>3.141592653589793</td>
+      <td>0.8509035245341184</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1.5</td>
+      <td>2.718281828459045</td>
+      <td>4.523561956057013</td>
+      <td>3.141592653589793</td>
+      <td>0.8509035245341184</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_72a41_row0_col0,#T_72a41_row0_col1,#T_72a41_row1_col0,#T_72a41_row1_col1,#T_72a41_row2_col0,#T_72a41_row2_col1,#T_72a41_row3_col0,#T_72a41_row3_col1,#T_72a41_row4_col0,#T_72a41_row4_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_72a41_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_72a41_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_72a41_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_72a41_row0_col1" class="data row0 col1" >1 * (3 + 4) / 2 % 2</td>
+            </tr>
+            <tr>
+                        <th id="T_72a41_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_72a41_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_72a41_row1_col1" class="data row1 col1" >EXP(1)</td>
+            </tr>
+            <tr>
+                        <th id="T_72a41_level0_row2" class="row_heading level0 row2" >2</th>
+                        <td id="T_72a41_row2_col0" class="data row2 col0" >_c2</td>
+                        <td id="T_72a41_row2_col1" class="data row2 col1" >LOG(23, 2)</td>
+            </tr>
+            <tr>
+                        <th id="T_72a41_level0_row3" class="row_heading level0 row3" >3</th>
+                        <td id="T_72a41_row3_col0" class="data row3 col0" >_c3</td>
+                        <td id="T_72a41_row3_col1" class="data row3 col1" >PI()</td>
+            </tr>
+            <tr>
+                        <th id="T_72a41_level0_row4" class="row_heading level0 row4" >4</th>
+                        <td id="T_72a41_row4_col0" class="data row4 col0" >_c4</td>
+                        <td id="T_72a41_row4_col1" class="data row4 col1" >SIN(45)</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 5 columns in 0.39 seconds<i><br><br>
+
+
+
+## Statistics, Random Numbers, and Hashing
+TODO: `PDF()`, `CDF()`, `iCDF()`, `RNG()`, `SAMPLE()`, `MD5()`, `RANDOM()`, etc.  
+
+## String Manipulation
+Some examples of common string manipulation operations:
+ `CONCAT()`,  `UPPER()`,  `LOWER()`,  `COALESCE()`, `STRING_SPLIT()`,  `REGEX_EXTRACT()`,  `REGEX_REPLACE()`
+
+
+```python
+select(
+	'bid.ad_size', #base attribute of ad size
+	'UPPER(bid.ad_size)', #upper case 
+	'lower(bid.ad_size)', #lower case
+	'COALESCE(bid.ad_size, "UNKNOWN")', #coalesce nulls  
+	'STRING_SPLIT(bid.ad_size, "i")', #split strings into arrays
+	'REGEX_EXTRACT(bid.ad_size, "[a-zA-Z0-9]", 0)', #extract a regex group
+	'REGEX_REPLACE(bid.ad_size, ["b", "_", "i", "xx"])', #replace characters in a string
+	'TO_STRING(1.3)', #cast anything to a string
+	'bid.ad_size == "BIG"' #string equality
+).from_events(4).limit(3)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+      <th>_c2</th>
+      <th>_c3</th>
+      <th>_c4</th>
+      <th>_c5</th>
+      <th>_c6</th>
+      <th>_c7</th>
+      <th>_c8</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>UNKNOWN</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>1.3</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>big</td>
+      <td>BIG</td>
+      <td>big</td>
+      <td>big</td>
+      <td>[b,g]</td>
+      <td>b</td>
+      <td>_xxg</td>
+      <td>1.3</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>big</td>
+      <td>BIG</td>
+      <td>big</td>
+      <td>big</td>
+      <td>[b,g]</td>
+      <td>b</td>
+      <td>_xxg</td>
+      <td>1.3</td>
+      <td>false</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_7bcf4_row0_col0,#T_7bcf4_row0_col1,#T_7bcf4_row1_col0,#T_7bcf4_row1_col1,#T_7bcf4_row2_col0,#T_7bcf4_row2_col1,#T_7bcf4_row3_col0,#T_7bcf4_row3_col1,#T_7bcf4_row4_col0,#T_7bcf4_row4_col1,#T_7bcf4_row5_col0,#T_7bcf4_row5_col1,#T_7bcf4_row6_col0,#T_7bcf4_row6_col1,#T_7bcf4_row7_col0,#T_7bcf4_row7_col1,#T_7bcf4_row8_col0,#T_7bcf4_row8_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_7bcf4_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_7bcf4_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_7bcf4_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_7bcf4_row0_col1" class="data row0 col1" >bid.ad_size</td>
+            </tr>
+            <tr>
+                        <th id="T_7bcf4_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_7bcf4_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_7bcf4_row1_col1" class="data row1 col1" >UPPER(bid.ad_size)</td>
+            </tr>
+            <tr>
+                        <th id="T_7bcf4_level0_row2" class="row_heading level0 row2" >2</th>
+                        <td id="T_7bcf4_row2_col0" class="data row2 col0" >_c2</td>
+                        <td id="T_7bcf4_row2_col1" class="data row2 col1" >lower(bid.ad_size)</td>
+            </tr>
+            <tr>
+                        <th id="T_7bcf4_level0_row3" class="row_heading level0 row3" >3</th>
+                        <td id="T_7bcf4_row3_col0" class="data row3 col0" >_c3</td>
+                        <td id="T_7bcf4_row3_col1" class="data row3 col1" >COALESCE(bid.ad_size, "UNKNOWN")</td>
+            </tr>
+            <tr>
+                        <th id="T_7bcf4_level0_row4" class="row_heading level0 row4" >4</th>
+                        <td id="T_7bcf4_row4_col0" class="data row4 col0" >_c4</td>
+                        <td id="T_7bcf4_row4_col1" class="data row4 col1" >STRING_SPLIT(bid.ad_size, "i")</td>
+            </tr>
+            <tr>
+                        <th id="T_7bcf4_level0_row5" class="row_heading level0 row5" >5</th>
+                        <td id="T_7bcf4_row5_col0" class="data row5 col0" >_c5</td>
+                        <td id="T_7bcf4_row5_col1" class="data row5 col1" >REGEX_EXTRACT(bid.ad_size, "[a-zA-Z0-9]", 0)</td>
+            </tr>
+            <tr>
+                        <th id="T_7bcf4_level0_row6" class="row_heading level0 row6" >6</th>
+                        <td id="T_7bcf4_row6_col0" class="data row6 col0" >_c6</td>
+                        <td id="T_7bcf4_row6_col1" class="data row6 col1" >REGEX_REPLACE(bid.ad_size, ["b", "_", "i", "xx"])</td>
+            </tr>
+            <tr>
+                        <th id="T_7bcf4_level0_row7" class="row_heading level0 row7" >7</th>
+                        <td id="T_7bcf4_row7_col0" class="data row7 col0" >_c7</td>
+                        <td id="T_7bcf4_row7_col1" class="data row7 col1" >TO_STRING(1.3)</td>
+            </tr>
+            <tr>
+                        <th id="T_7bcf4_level0_row8" class="row_heading level0 row8" >8</th>
+                        <td id="T_7bcf4_row8_col0" class="data row8 col0" >_c8</td>
+                        <td id="T_7bcf4_row8_col1" class="data row8 col1" >bid.ad_size == "BIG"</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 9 columns in 0.37 seconds<i><br><br>
+
+
+
+## Date/Time Manipulation
+TODO`NOW()`, `DATE()`, `TO_DATETIME()`, `DAY_OF_WEEK()`, `MILLIS()`, `FROM_UNIXTIME()`
+
+## Array Manipulation
+TODO`MAP()`, `REDUCE()`, `FILTER()`, `RANGE()`, `SIZE()`, `SORT()`, `MIN()`, `MAX()`, etc.  
+
+## Local Variables and Multi-Statement Expressions
+Long transformations can be broken up into multiple statements, delimited by a `;` for readability.  For example:
+
+
+```python
+select('''
+positive_value=1.0;
+negative_value=-1.0;
+ad_size=COALESCE(UPPER(bid.ad_size), 'UNKNOWN');
+if(bid.ad_size == 'BIG', positive_value, negative_value)
+''').from_events(4).limit(3)
+#In multi-statement expressions, the last statement in the expression must return a value.
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>-1.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>-1.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>-1.0</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_b94cb_row0_col0,#T_b94cb_row0_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_b94cb_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_b94cb_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_b94cb_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_b94cb_row0_col1" class="data row0 col1" >
+positive_value=1.0;
+negative_value=-1.0;
+ad_size=COALESCE(UPPER(bid.ad_size), 'UNKNOWN');
+if(bid.ad_size == 'BIG', positive_value, negative_value)
+</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 1 columns in 0.39 seconds<i><br><br>
+
+
+
+## Timeline Scanning Operations
+Because of TQL's data processing model, the entire timeline is available in the context of each event row being processed.  This makes it simple to write expressions that summarize the activity on a timeline, or compare activity on a timeline to the current event.  For Example:
+
+## The PREDICT Function
+Models are first-class citizens of TQL, and are accessible via the native function `PREDICT()`. Models are published into TQL with the column expressions used to produce the features, and because TQL expressions are applied to timeline events only when a query is executed, TQL can create result sets with model predictions as well as other attributes or metrics.  For example:
+
+
+```python
+select(
+	'bid.ad_size',
+	'PREDICT("my_model")'
+).from_events(4).limit(3)
+```
+
+Since the output of `PREDICT()` is simply a floating point number, it can be further manipulated using the expression language.  Multiple models can even be composed together to compute derived values.  For example, perhaps you would like to join together your predictions of winrate and conversion rate:
+
+
+```python
+select(
+	'PREDICT('winrate_model') * PREDICT('coversion_rate_model')'
+).from_events(4).limit(3)
+```
+
+Models must be previously published into TQL.  Refer to [Model Training and Publishing](#) guide for more information on this topic.
+
+## The SET_PROPERTY Function
+The native function `SET_PROPERTY()`can be used to temporarily change an attribute of the input event for the rest of the execution of the current expression.  For example:
+
+
+```python
+select(
+	'bid.ad_size',
+	'SET_PROPERTY("bid.ad_size", "tiny"); bid.ad_size'
+).from_events(4).limit(3)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>None</td>
+      <td>tiny</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>big</td>
+      <td>tiny</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>big</td>
+      <td>tiny</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_af3f7_row0_col0,#T_af3f7_row0_col1,#T_af3f7_row1_col0,#T_af3f7_row1_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_af3f7_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_af3f7_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_af3f7_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_af3f7_row0_col1" class="data row0 col1" >bid.ad_size</td>
+            </tr>
+            <tr>
+                        <th id="T_af3f7_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_af3f7_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_af3f7_row1_col1" class="data row1 col1" >SET_PROPERTY("bid.ad_size", "tiny"); bid.ad_size</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 2 columns in 0.31 seconds<i><br><br>
+
+
+
+This functionality is powerful in conjunction with the [Model Predict Function](#Model-Predict-Function), allowing you to easily write queries that make counterfactual predictions.  For example:
+
+
+```python
+select(
+	'bid.ad_size',
+	'SET_PROPERTY("bid.ad_size", "tiny"); bid.ad_size' 
+	'PREDICT("my_winrate_model")', 
+	'SET_PROPERTY("bid.ad_size", "tiny"); PREDICT("my_winrate_model")' 
+).from_events(4).limit(3)
+```
+
+## Comments
+Expressions may contain comments.  Both inline and multi-line comments are supported:
+
+
+```python
+select('''
+ad_size = bid.ad_size; //this is a comment
+/*
+this is a comment...
+...on multiple lines
+*/
+ad_size 
+''').from_events(4).limit(3)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>big</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>big</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_5ecad_row0_col0,#T_5ecad_row0_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_5ecad_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_5ecad_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_5ecad_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_5ecad_row0_col1" class="data row0 col1" >
+ad_size = bid.ad_size; //this is a comment
+/*
+this is a comment...
+...on multiple lines
+*/
+ad_size 
+</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 1 columns in 0.31 seconds<i><br><br>
+
+
+
+## User Defined Functions (UDFs)
+In addition to TQL's library of built-in functions, the user can write additional functions to extend the language's capabilities with custom behavior.  Functions are defined with the syntax `function(...){ ... }`.  A function may also provide an optional doc string preceding it.  For example:
+
+
+```python
+select(
+  'clean_ad_size()'
+).from_events(4).udf('''
+function clean_ad_size() {
+  COALESCE(UPPER(bid.ad_size), 'UNKNOWN')
+}
+''').limit(3) 
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>UNKNOWN</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>BIG</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>BIG</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_95a53_row0_col0,#T_95a53_row0_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_95a53_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_95a53_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_95a53_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_95a53_row0_col1" class="data row0 col1" >clean_ad_size()</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 1 columns in 0.39 seconds<i><br><br>
+
+
+
+Just like regular expressions, UDFs may contain multiple statements, delimited by a `;`, in which case the last statement must return a value.  UDFs may also define input arguments.  For example:
+
+
+```python
+select(
+  'circumference(3)'
+).from_events(4).udf('''
+function circumference(r) {
+	diameter = 2 * r;
+	circ = diameter *  PI();
+	circ
+}
+''').limit(3) 
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>18.84955592153876</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>18.84955592153876</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>18.84955592153876</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_03774_row0_col0,#T_03774_row0_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_03774_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_03774_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_03774_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_03774_row0_col1" class="data row0 col1" >circumference(3)</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 1 columns in 0.32 seconds<i><br><br>
+
+
+
+## Compile and Runtime Error Handling
+If an expression fails to compile, an error will be shown when trying to submit the query.  
+
+
+```python
+#For example, 'blah'  has no meaning here:
+select('blah').from_events(4)
+```
+
+    Encountered 1 expression compilation error: Line 1:0 Unknown variable '@blah' (in column _c0)
+    Expression error: Line 1:0 Unknown variable '@blah' (in column _c0)
+    blah
+    ^
+    
+
+
+
+    ---------------------------------------------------------------------------
+
+    TQLAnalysisException                      Traceback (most recent call last)
+
+    ~/dev/.virtualenvs/noumena-dev/lib/python3.7/site-packages/IPython/core/formatters.py in __call__(self, obj)
+        343             method = get_real_method(obj, self.print_method)
+        344             if method is not None:
+    --> 345                 return method()
+        346             return None
+        347         else:
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in _repr_html_(self)
+        861 
+        862     def _repr_html_(self):
+    --> 863         return self.submit(interactive=self._interactive)._repr_html_()
+        864 
+        865     def __iter__(self):
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in submit(self, interactive, wait, print_payloads, analyze, spark)
+        757         from noumena.tql import icarus
+        758         start = time.time()
+    --> 759         submit_reply = icarus.post('query/submit', self.json(), print_json=print_payloads)
+        760         if interactive:
+        761             #if interactive, the server reply will already contain the resultset
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in post(url, json_data, files_data, data, print_json)
+         13         print(json.dumps(json_data))
+         14     resp = requests.post(url, data=data, json=json_data, files=files_data)
+    ---> 15     return _handle_response(url, resp, print_json=print_json)
+         16 
+         17 
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in _handle_response(url, resp, print_json)
+         69             else:
+         70                 print(reason)
+    ---> 71             raise TQLAnalysisException(reason)
+         72         else:
+         73             msg = ''
+
+
+    TQLAnalysisException: Encountered 1 expression compilation error: Line 1:0 Unknown variable '@blah' (in column _c0)Expression error: Line 1:0 Unknown variable '@blah' (in column _c0)
+    blah
+    ^
+
+
+
+
+
+    Query<project_id=4, 
+    interactive=None, 
+    timeline_limit=None, 
+    row_limit=None, 
+    from_filters=None, 
+    where_filters=None, 
+    columns=[{'name': None, 'expression': 'blah', 'type': 'METADATA'}], 
+    sampling=None>
+
+
+
+
+```python
+#In this example, the `LOG` function requires two operands, the input number and the log base to use:
+select('log(3)').from_events(4)
+```
+
+    Encountered 1 expression compilation error: Line 1:0 LOG function needs 2 operands (in column _c0)
+    Expression error: Line 1:0 LOG function needs 2 operands (in column _c0)
+    log(3)
+    ^
+    
+
+
+
+    ---------------------------------------------------------------------------
+
+    TQLAnalysisException                      Traceback (most recent call last)
+
+    ~/dev/.virtualenvs/noumena-dev/lib/python3.7/site-packages/IPython/core/formatters.py in __call__(self, obj)
+        343             method = get_real_method(obj, self.print_method)
+        344             if method is not None:
+    --> 345                 return method()
+        346             return None
+        347         else:
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in _repr_html_(self)
+        861 
+        862     def _repr_html_(self):
+    --> 863         return self.submit(interactive=self._interactive)._repr_html_()
+        864 
+        865     def __iter__(self):
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in submit(self, interactive, wait, print_payloads, analyze, spark)
+        757         from noumena.tql import icarus
+        758         start = time.time()
+    --> 759         submit_reply = icarus.post('query/submit', self.json(), print_json=print_payloads)
+        760         if interactive:
+        761             #if interactive, the server reply will already contain the resultset
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in post(url, json_data, files_data, data, print_json)
+         13         print(json.dumps(json_data))
+         14     resp = requests.post(url, data=data, json=json_data, files=files_data)
+    ---> 15     return _handle_response(url, resp, print_json=print_json)
+         16 
+         17 
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in _handle_response(url, resp, print_json)
+         69             else:
+         70                 print(reason)
+    ---> 71             raise TQLAnalysisException(reason)
+         72         else:
+         73             msg = ''
+
+
+    TQLAnalysisException: Encountered 1 expression compilation error: Line 1:0 LOG function needs 2 operands (in column _c0)Expression error: Line 1:0 LOG function needs 2 operands (in column _c0)
+    log(3)
+    ^
+
+
+
+
+
+    Query<project_id=4, 
+    interactive=None, 
+    timeline_limit=None, 
+    row_limit=None, 
+    from_filters=None, 
+    where_filters=None, 
+    columns=[{'name': None, 'expression': 'log(3)', 'type': 'METADATA'}], 
+    sampling=None>
+
+
+
+
+```python
+#In this example, we simply forgot a closing parenthesis:
+select('log(3').from_events('lethe')
+```
+
+
+    ---------------------------------------------------------------------------
+
+    TQLAnalysisException                      Traceback (most recent call last)
+
+    <ipython-input-22-aba21e9e1ffb> in <module>
+          1 #In this example, we simply forgot a closing parenthesis:
+    ----> 2 select('log(3').from_events('lethe')
+    
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in from_events(self, identifier, *types)
+        124         Returns: the current TQL query instance for further chaining/modification
+        125         """
+    --> 126         self._project = self._resolve_project(identifier)
+        127         self.spec['project_id'] = self._project.get_id()
+        128         #validate event types are valid
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/query.py in _resolve_project(self, identifier)
+        212     def _resolve_project(self, identifier):
+        213         from noumena.tql.timelines import load_table
+    --> 214         table = load_table(identifier)
+        215         if not table:
+        216             raise Exception(f'could not find table "{identifier}"')
+
+
+    ~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/timelines.py in load_table(project_identifier, fail_if_not_found)
+         88     project = Project._find(project_identifier)
+         89     if not project and fail_if_not_found:
+    ---> 90         raise TQLAnalysisException(f'table {project_identifier} not found.')
+         91     return project
+         92 
+
+
+    TQLAnalysisException: table lethe not found.
+
+
+However, if an expression compiles successfully but fails during evaluation, then the result for that row will be null.  In this example, `upper(bid.ad_size)` returns null because some events rows do not have ad size defined at all.
+
+
+```python
+select(
+	'bid.ad_size', 
+	'upper(bid.ad_size)'
+).from_events(4).limit(3)
+```
+
+
+
+
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+
+    .dataframe tbody tr th {
+        vertical-align: top;
+    }
+
+    .dataframe thead th {
+        text-align: right;
+    }
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>big</td>
+      <td>BIG</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>big</td>
+      <td>BIG</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_01c26_row0_col0,#T_01c26_row0_col1,#T_01c26_row1_col0,#T_01c26_row1_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_01c26_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_01c26_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_01c26_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_01c26_row0_col1" class="data row0 col1" >bid.ad_size</td>
+            </tr>
+            <tr>
+                        <th id="T_01c26_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_01c26_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_01c26_row1_col1" class="data row1 col1" >upper(bid.ad_size)</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 2 columns in 0.31 seconds<i><br><br>
+
+
+
+## TQL Expression Debugger
+TQL ships with a debugger to help you write expressions in Jupyter Notebooks.  To install the debugger, use the noumena command line tool:
+```
+$. noumena install-extensions
+```
+
+To invoke the debugger, simply use the TQL built-in function `debugger()`, passing in a project id or name:
+
+
+```python
+debugger(4)
+```
+
+You can also invoke the debugger in the context of a TQL query, using it's method.  When invoked this way, the debugger will be invoked with whatever query context you provide, including where clauses, unions, etc:
+
+
+```python
+select('bid.ad_size').from_events(4).debugger()
+```
+
+## Where To Next?
+Browse the [**expression language cheat sheet**](TODO),  and the full [**expression function reference**](TODO).
+
+
+```python
+
+```

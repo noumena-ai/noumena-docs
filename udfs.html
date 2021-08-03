@@ -1,0 +1,580 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>User-Defined Functions (UDFs) &mdash; noumena-tql  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/noumena.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/noumena.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="overview.html" class="icon icon-home"> noumena-tql
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">   Quickstart Guide</a></li>
+<li class="toctree-l1"><a class="reference internal" href="core-concepts.html">   Core Concepts and Data Processing Model</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="overview.html">noumena-tql</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="overview.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>User-Defined Functions (UDFs)</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/udfs.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="tex2jax_ignore mathjax_ignore section" id="user-defined-functions-udfs">
+<h1>User-Defined Functions (UDFs)<a class="headerlink" href="#user-defined-functions-udfs" title="Permalink to this headline">¶</a></h1>
+<p>User-Defined Functions (UDFs) are user-programmable routines that operate on a single row and emit a value, just like regular TQL expressions.  UDF function bodies may contain multiple statements, delimited by <code class="docutils literal notranslate"><span class="pre">;</span></code>, as long as the last statement returns a value. This allows you to extend the TQL Expression Language to encode custom pieces of functionality specific to your problem space.</p>
+<p>UDFs are defined as a Python string.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">/**</span> 
+ <span class="o">*</span> <span class="n">This</span> <span class="ow">is</span> <span class="n">the</span> <span class="n">optional</span> <span class="n">java</span><span class="o">-</span><span class="n">style</span> <span class="n">function</span> <span class="n">doc</span> <span class="k">for</span> <span class="n">udf</span> 
+ <span class="o">*</span> <span class="nd">@param</span> <span class="n">some</span> <span class="n">parameters</span> 
+ <span class="o">*</span> <span class="nd">@return</span> <span class="k">return</span> <span class="n">value</span> <span class="n">of</span> <span class="n">the</span> <span class="n">function</span> 
+ <span class="o">*/</span> 
+<span class="n">function</span> <span class="n">foo</span><span class="p">()</span> <span class="p">{</span> 
+  <span class="n">function</span> <span class="n">body</span> 
+<span class="p">}</span> 
+</pre></div>
+</div>
+<p>UDF’s contain two parts:</p>
+<ol class="simple">
+<li><p>Function doc(optional)</p></li>
+<li><p>Function definition(starts with keyword <code class="docutils literal notranslate"><span class="pre">function</span></code>)</p></li>
+</ol>
+<p>There are three levels of UDFs, which we will cover in this guide:</p>
+<ol class="simple">
+<li><p>Table/Project Level UDFs</p></li>
+<li><p>Query level UDFs</p></li>
+<li><p>Inline expression UDFs</p></li>
+</ol>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">noumena.tql</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>------------------------------------------------------------------
+           Version: 20.1.16-SNAPSHOT
+ Version Timestamp: 2021-07-21 17:34:23
+       Version Age: 23 hours, 11 minutes, 13 seconds
+   Filesystem Root: /Users/zkozick/.noumena/files
+ Working Directory: /Users/zkozick/.noumena
+Configuration File: /Users/zkozick/.noumena/noumena_conf.yml
+       Api Gateway: http://localhost:9000
+    Service Status: Icarus: ONLINE, Daedalus: ONLINE
+    Service Uptime: 1 days, 6 hours, 7 minutes, 16 seconds
+------------------------------------------------------------------
+</pre></div>
+</div>
+<div class="section" id="table-level-udfs">
+<h2>Table-level UDFs<a class="headerlink" href="#table-level-udfs" title="Permalink to this headline">¶</a></h2>
+<p>Table UDFs can be added via the TQL function <code class="docutils literal notranslate"><span class="pre">upload_udf(src1,src2,</span> <span class="pre">...)</span></code> and will be available to any subsequent queries just like any builtin function.</p>
+<p>You can validate/upload/delete/get udfs on a table level</p>
+<div class="section" id="defining-udf-function-source-strings">
+<h3>Defining UDF function source strings<a class="headerlink" href="#defining-udf-function-source-strings" title="Permalink to this headline">¶</a></h3>
+<div class="alert alert-block alert-info">
+<b>Tip:</b> multiple function strings can be provided and they will be uploaded in the order of declaration.
+If a UDF calls another UDF in it's source, make sure all it's dependencies are declared first.
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">div2_func_src</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">/**</span>
+<span class="s1">* given an integer, long, or floating point number, return the value / 2</span>
+<span class="s1">* @param x Number</span>
+<span class="s1">* @return Double</span>
+<span class="s1">*/</span>
+
+<span class="s1">function div2(x) { </span>
+<span class="s1">  x / 2 </span>
+<span class="s1">}</span>
+<span class="s1">&#39;&#39;&#39;</span>
+
+<span class="n">div6_func_src</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">/**</span>
+<span class="s1">* given an integer, long, or floating point number, return the value / 6</span>
+<span class="s1">* @param x Number</span>
+<span class="s1">* @return Double</span>
+<span class="s1">*/</span>
+
+<span class="s1">function div6(x) { </span>
+<span class="s1">  div2(x) / 3 </span>
+<span class="s1">}</span>
+<span class="s1">&#39;&#39;&#39;</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="udf-validation">
+<h3>UDF Validation<a class="headerlink" href="#udf-validation" title="Permalink to this headline">¶</a></h3>
+<p>Validate a UDF to make sure there are no compilation errors, before uploading it to a table.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">validate_udf</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">div2_func_src</span><span class="p">,</span> <span class="n">div6_func_src</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="uploading-a-udf-to-a-table-project">
+<h3>Uploading a UDF to a table/project<a class="headerlink" href="#uploading-a-udf-to-a-table-project" title="Permalink to this headline">¶</a></h3>
+<p>Table/project-level UDFs are uploaded using the tql function <code class="docutils literal notranslate"><span class="pre">upload_udf(project_id,</span> <span class="pre">src)</span></code>.  Validation on the UDF will be performed during the upload.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># clean up udfs from previous run</span>
+<span class="n">delete_udf</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;div2&#39;</span><span class="p">)</span>
+<span class="n">delete_udf</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;div6&#39;</span><span class="p">)</span>
+
+<span class="c1"># upload this UDF</span>
+<span class="n">upload_udf</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">div2_func_src</span><span class="p">,</span> <span class="n">div6_func_src</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Once the UDF has been successfully saved on the table, it may be used in TQL queries, just like any other native TQL function:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;div2(3)&#39;</span><span class="p">,</span> <span class="s1">&#39;div6(18)&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>1.5</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>1.5</td>
+      <td>3.0</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>1.5</td>
+      <td>3.0</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_f2bd0_row0_col0,#T_f2bd0_row0_col1,#T_f2bd0_row1_col0,#T_f2bd0_row1_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_f2bd0_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_f2bd0_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_f2bd0_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_f2bd0_row0_col1" class="data row0 col1" >div2(3)</td>
+            </tr>
+            <tr>
+                        <th id="T_f2bd0_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_f2bd0_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_f2bd0_row1_col1" class="data row1 col1" >div6(18)</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 2 columns in 0.46 seconds<i><br><br>
+</div>
+<div class="section" id="looking-up-table-level-udfs">
+<h3>Looking up Table-level UDFs<a class="headerlink" href="#looking-up-table-level-udfs" title="Permalink to this headline">¶</a></h3>
+<p>Find a Table-level UDF function definition by name:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">get_udf</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;div6&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<style  type="text/css" >
+    #T_d7384_ th {
+          text-align: left;
+    }#T_d7384_row0_col0,#T_d7384_row0_col1{
+            text-align:  left;
+            white-space:  pre-wrap;
+        }</style><table style="display:inline; padding-right: 20px" id="T_d7384_"  class="tex2jax_ignore"><thead>    <tr>        <th class="col_heading level0 col0" >name</th>        <th class="col_heading level0 col1" >source</th>    </tr></thead><tbody>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>            &lt;tr&gt;
+                            &lt;td id=&quot;T_d7384_row0_col0&quot; class=&quot;data row0 col0&quot; &gt;div6&lt;/td&gt;
+                    &lt;td id=&quot;T_d7384_row0_col1&quot; class=&quot;data row0 col1&quot; &gt;/**
+</pre></div>
+</div>
+<ul class="simple">
+<li><p>given an integer, long, or floating point number, return the value / 6</p></li>
+<li><p>&#64;param x Number</p></li>
+<li><p>&#64;return Double
+*/</p></li>
+</ul>
+<p>function div6(x) {
+div2(x) / 3
+}</td>
+</tr>
+</tbody>&lt;/table style=”display:inline; padding-right: 20px”&gt;</p>
+</div>
+<div class="section" id="deleting-a-udf">
+<h3>Deleting a UDF<a class="headerlink" href="#deleting-a-udf" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># delete a udf by function name</span>
+<span class="n">delete_udf</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;div6&#39;</span><span class="p">)</span>
+
+<span class="c1"># trying to retrieve it again will result in a TQLNotFoundException</span>
+<span class="n">get_udf</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;div6&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>function div6 doesn&#39;t exist on project: 1 (404)
+
+
+
+---------------------------------------------------------------------------
+
+TQLAnalysisNotFound                       Traceback (most recent call last)
+
+&lt;ipython-input-26-f53f5e57b2fc&gt; in &lt;module&gt;
+      3 
+      4 # trying to retrieve it again will result in a TQLNotFoundException
+----&gt; 5 get_udf(1, &#39;div6&#39;)
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/udf.py in get_udf(project_id, function_name)
+     66 
+     67     &quot;&quot;&quot;
+---&gt; 68     function_src = icarus.get(f&#39;projects/{project_id}/udf/{function_name}&#39;)
+     69     return UDF({function_name: function_src})
+     70 
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in get(url, params, print_json)
+     19     url = os.path.join(ICARUS_BASE, url)
+     20     resp = requests.get(url, params=params)
+---&gt; 21     return _handle_response(url, resp, print_json=print_json)
+     22 
+     23 
+
+
+~/dev/nanigans/noumena/noumena-python/noumena/noumena/tql/icarus.py in _handle_response(url, resp, print_json)
+     53                 reason = resp.content
+     54             print(f&#39;{reason} (404)&#39;)
+---&gt; 55             raise TQLAnalysisNotFound(f&#39;{url} {reason} (404)&#39;)
+     56         if resp.status_code == 400:
+     57             try:
+
+
+TQLAnalysisNotFound: http://localhost:9000/v1/projects/1/udf/div6 function div6 doesn&#39;t exist on project: 1 (404)
+</pre></div>
+</div>
+</div>
+<div class="section" id="list-all-existing-udfs-on-a-table">
+<h3>List all existing UDFs on a table<a class="headerlink" href="#list-all-existing-udfs-on-a-table" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">list_udfs</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="query-level-udfs">
+<h2>Query-level UDFs<a class="headerlink" href="#query-level-udfs" title="Permalink to this headline">¶</a></h2>
+<p>Query-level UDFs can be attached to a query via <code class="docutils literal notranslate"><span class="pre">select(…).udf(src1,</span> <span class="pre">src2,</span> <span class="pre">...)</span></code> and will be available to any expression in the query, but not beyond.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">udf_src</span> <span class="o">=</span> <span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">function is_zero(val, epsilon) {</span>
+<span class="s1">  ABS(val) &lt; epsilon </span>
+<span class="s1">}</span>
+<span class="s1">&#39;&#39;&#39;</span>
+<span class="n">select</span><span class="p">(</span><span class="s1">&#39;is_zero(0.00062, .01)&#39;</span><span class="p">,</span> <span class="s1">&#39;is_zero(0.62, .01)&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">udf</span><span class="p">(</span><span class="n">udf_src</span><span class="p">)</span>
+</pre></div>
+</div>
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+      <th>_c1</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>true</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>true</td>
+      <td>false</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>true</td>
+      <td>false</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_ab0a2_row0_col0,#T_ab0a2_row0_col1,#T_ab0a2_row1_col0,#T_ab0a2_row1_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_ab0a2_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_ab0a2_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_ab0a2_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_ab0a2_row0_col1" class="data row0 col1" >is_zero(0.00062, .01)</td>
+            </tr>
+            <tr>
+                        <th id="T_ab0a2_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_ab0a2_row1_col0" class="data row1 col0" >_c1</td>
+                        <td id="T_ab0a2_row1_col1" class="data row1 col1" >is_zero(0.62, .01)</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 2 columns in 0.26 seconds<i><br><br>
+</div>
+<div class="section" id="inline-expression-udfs">
+<h2>Inline expression UDFs<a class="headerlink" href="#inline-expression-udfs" title="Permalink to this headline">¶</a></h2>
+<p>UDFs can also be placed in any expression, and will only be available for the scope of that expression:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;function say_hello(name) { concat(&quot;Hello, &quot;, name, &quot;!&quot;) } say_hello(&quot;Bob&quot;)&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>_c0</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>Hello, Bob!</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>Hello, Bob!</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>Hello, Bob!</td>
+    </tr>
+  </tbody>
+</table>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_c416a_row0_col0,#T_c416a_row0_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_c416a_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_c416a_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_c416a_row0_col0" class="data row0 col0" >_c0</td>
+                        <td id="T_c416a_row0_col1" class="data row0 col1" >function say_hello(name) { concat("Hello, ", name, "!") } say_hello("Bob")</td>
+            </tr>
+    </tbody></table><i>query produced 3 rows x 1 columns in 0.28 seconds<i><br><br>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, various.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

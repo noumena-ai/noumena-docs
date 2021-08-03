@@ -1,0 +1,1199 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Importing Data Into TQL &mdash; noumena-tql  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/noumena.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/noumena.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="overview.html" class="icon icon-home"> noumena-tql
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">   Quickstart Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="overview.html">noumena-tql</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="overview.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Importing Data Into TQL</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/importing.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="tex2jax_ignore mathjax_ignore section" id="importing-data-into-tql">
+<h1>Importing Data Into TQL<a class="headerlink" href="#importing-data-into-tql" title="Permalink to this headline">¶</a></h1>
+<p>Before you can write any queries, you must import your raw timeseries data into TQL by constructing timelines.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">noumena.tql</span> <span class="kn">import</span> <span class="o">*</span>
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data_path</span> <span class="o">=</span> <span class="s1">&#39;gs://noumena-public/data/lethe_demo_set_randomize_users_id4_v1.3/activity*.csv&#39;</span>
+<span class="n">activity</span> <span class="o">=</span> <span class="n">create_timeseries</span><span class="p">(</span><span class="s1">&#39;activity&#39;</span><span class="p">)</span>
+<span class="n">activity</span><span class="o">.</span><span class="n">identified_by</span><span class="p">(</span><span class="s1">&#39;user_id&#39;</span><span class="p">,</span> <span class="s1">&#39;event_time&#39;</span><span class="p">)</span>
+<span class="n">activity</span><span class="o">.</span><span class="n">from_files</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">has_csv_header</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>TimeSeries(name=activity, 
+	timeline_id_col=user_id, 
+	timestamp_col=event_time, 
+	format=CSV, 
+	data_path=gs://noumena...ctivity*.csv, 
+	sql_statements=None)
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">activity</span><span class="o">.</span><span class="n">pandas_dataframe</span><span class="p">()</span>
+<span class="n">activity</span><span class="o">.</span><span class="n">spark_dataframe</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>DataFrame[activity_id: string, event_time: string, user_id: string, conversion: string]
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">activity</span><span class="o">.</span><span class="n">visualize</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>validating &#39;activity&#39;... no errors found.
+preparing data...
+
+
+
+Timeline(events=&#39;[{&quot;_type&quot;: &quot;activity&quot;, &quot;_timeline_id&quot;: &quot;u196&quot;, &quot;_datetime&quot;: &quot;2021-01-11 00:00:03&quot;, &quot;activity_…
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">data_path</span> <span class="o">=</span> <span class="s1">&#39;gs://noumena-public/data/lethe_demo_set_randomize_users_id4_v1.3/bid*.csv&#39;</span>
+<span class="n">bids</span> <span class="o">=</span> <span class="n">create_timeseries</span><span class="p">(</span><span class="s1">&#39;bid&#39;</span><span class="p">)</span>
+<span class="n">bids</span><span class="o">.</span><span class="n">identified_by</span><span class="p">(</span><span class="s1">&#39;user_id&#39;</span><span class="p">,</span> <span class="s1">&#39;event_time&#39;</span><span class="p">)</span>
+<span class="n">bids</span><span class="o">.</span><span class="n">from_files</span><span class="p">(</span><span class="n">data_path</span><span class="p">,</span> <span class="n">has_csv_header</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+<span class="n">bids</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>validating &#39;bid&#39;... no errors found.
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">users</span> <span class="o">=</span> <span class="n">create_timeseries</span><span class="p">(</span><span class="s1">&#39;user&#39;</span><span class="p">)</span>
+<span class="n">users</span><span class="o">.</span><span class="n">identified_by</span><span class="p">(</span><span class="s1">&#39;user_id&#39;</span><span class="p">,</span> <span class="s1">&#39;timestamp&#39;</span><span class="p">,</span> <span class="n">duration_col</span><span class="o">=</span><span class="s1">&#39;duration&#39;</span><span class="p">)</span>
+<span class="n">users</span><span class="o">.</span><span class="n">from_sql</span><span class="p">(</span><span class="s1">&#39;&#39;&#39;</span>
+<span class="s1">  CREATE OR REPLACE TEMPORARY VIEW users </span>
+<span class="s1">  USING CSV options (</span>
+<span class="s1">    path=&quot;gs://noumena-public/data/lethe_demo_set_randomize_users_id4_v1.3/user.csv&quot;,</span>
+<span class="s1">    inferSchema=&quot;true&quot;,</span>
+<span class="s1">    header=&quot;true&quot;</span>
+<span class="s1">  )&#39;&#39;&#39;</span><span class="p">,</span>
+<span class="c1">#   &#39;&#39;&#39;create or replace temporary view users_filtered as select u.* from users where &lt;fancy bot filter statement here&gt;&#39;&#39;&#39;,</span>
+  <span class="s1">&#39;SELECT u.*, &quot;2021-01-01&quot; timestamp, &quot;1&quot; duration FROM users u&#39;</span>
+<span class="p">)</span>
+<span class="n">users</span><span class="o">.</span><span class="n">validate</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>validating &#39;user&#39;... no errors found.
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">table</span> <span class="o">=</span> <span class="n">create_table</span><span class="p">(</span><span class="s1">&#39;advertising_funnel_data&#39;</span><span class="p">,</span> <span class="n">or_update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span><span class="o">.</span><span class="n">from_timeseries</span><span class="p">(</span><span class="n">bids</span><span class="p">,</span> <span class="n">activity</span><span class="p">,</span> <span class="n">users</span><span class="p">)</span>
+<span class="n">table</span><span class="o">.</span><span class="n">build_timelines</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>Click to <a href="http://localhost:9000/v1/projects/timelines/133/abort" target="_blank">Abort Job</a>
+<p><em>NOTE: Abort link will open the result of the call in a <B>new tab/window</B></em></p></p>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>SUCCESS:  233/233|██████████|, TOTAL ELAPSED=0:00:19, WAIT=0:00:00, PENDING=0:00:01, COMPILING=0:00:18  
+</pre></div>
+</div>
+<style  type="text/css" >
+    #T_8d228_ th {
+          text-align: left;
+    }#T_8d228_row0_col0,#T_8d228_row0_col1,#T_8d228_row1_col0,#T_8d228_row1_col1,#T_8d228_row2_col0,#T_8d228_row2_col1,#T_8d228_row3_col0,#T_8d228_row3_col1,#T_8d228_row4_col0,#T_8d228_row4_col1,#T_8d228_row5_col0,#T_8d228_row5_col1,#T_8d228_row6_col0,#T_8d228_row6_col1,#T_8d228_row7_col0,#T_8d228_row7_col1,#T_8d228_row8_col0,#T_8d228_row8_col1{
+            text-align:  left;
+            white-space:  pre-wrap;
+        }</style><table style="display:inline; padding-right: 20px" id="T_8d228_"  class="tex2jax_ignore"><caption style="font-weight: bold; font-size:120%">Timeline Statistics</caption style="font-weight: bold; font-size:120%"><thead>    <tr>        <th class="col_heading level0 col0" >0</th>        <th class="col_heading level0 col1" >1</th>    </tr></thead><tbody>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>            &lt;tr&gt;
+                            &lt;td id=&quot;T_8d228_row0_col0&quot; class=&quot;data row0 col0&quot; &gt;Total Timelines&lt;/td&gt;
+                    &lt;td id=&quot;T_8d228_row0_col1&quot; class=&quot;data row0 col1&quot; &gt;1000&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_8d228_row1_col0&quot; class=&quot;data row1 col0&quot; &gt;Smallest Timeline&lt;/td&gt;
+                    &lt;td id=&quot;T_8d228_row1_col1&quot; class=&quot;data row1 col1&quot; &gt;1 events&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_8d228_row2_col0&quot; class=&quot;data row2 col0&quot; &gt;Largest Timeline&lt;/td&gt;
+                    &lt;td id=&quot;T_8d228_row2_col1&quot; class=&quot;data row2 col1&quot; &gt;904 events&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_8d228_row3_col0&quot; class=&quot;data row3 col0&quot; &gt;Min Timestamp&lt;/td&gt;
+                    &lt;td id=&quot;T_8d228_row3_col1&quot; class=&quot;data row3 col1&quot; &gt;2021-01-01 00:00:00&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_8d228_row4_col0&quot; class=&quot;data row4 col0&quot; &gt;Max Timestamp&lt;/td&gt;
+                    &lt;td id=&quot;T_8d228_row4_col1&quot; class=&quot;data row4 col1&quot; &gt;2021-01-14 23:59:59&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_8d228_row5_col0&quot; class=&quot;data row5 col0&quot; &gt;Total Events&lt;/td&gt;
+                    &lt;td id=&quot;T_8d228_row5_col1&quot; class=&quot;data row5 col1&quot; &gt;198393&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_8d228_row6_col0&quot; class=&quot;data row6 col0&quot; &gt;Activity Events&lt;/td&gt;
+                    &lt;td id=&quot;T_8d228_row6_col1&quot; class=&quot;data row6 col1&quot; &gt;25416&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_8d228_row7_col0&quot; class=&quot;data row7 col0&quot; &gt;Bid Events&lt;/td&gt;
+                    &lt;td id=&quot;T_8d228_row7_col1&quot; class=&quot;data row7 col1&quot; &gt;171977&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_8d228_row8_col0&quot; class=&quot;data row8 col0&quot; &gt;User Events&lt;/td&gt;
+                    &lt;td id=&quot;T_8d228_row8_col1&quot; class=&quot;data row8 col1&quot; &gt;1000&lt;/td&gt;
+        &lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table style=&quot;display:inline; padding-right: 20px&quot;&gt;&lt;br&gt;&lt;style  type=&quot;text/css&quot; &gt;
+#T_dab45_ th {
+      text-align: left;
+}#T_dab45_row0_col0,#T_dab45_row0_col1,#T_dab45_row0_col2,#T_dab45_row1_col0,#T_dab45_row1_col1,#T_dab45_row1_col2,#T_dab45_row2_col0,#T_dab45_row2_col1,#T_dab45_row2_col2,#T_dab45_row3_col0,#T_dab45_row3_col1,#T_dab45_row3_col2,#T_dab45_row4_col0,#T_dab45_row4_col1,#T_dab45_row4_col2,#T_dab45_row5_col0,#T_dab45_row5_col1,#T_dab45_row5_col2,#T_dab45_row6_col0,#T_dab45_row6_col1,#T_dab45_row6_col2,#T_dab45_row7_col0,#T_dab45_row7_col1,#T_dab45_row7_col2,#T_dab45_row8_col0,#T_dab45_row8_col1,#T_dab45_row8_col2,#T_dab45_row9_col0,#T_dab45_row9_col1,#T_dab45_row9_col2,#T_dab45_row10_col0,#T_dab45_row10_col1,#T_dab45_row10_col2,#T_dab45_row11_col0,#T_dab45_row11_col1,#T_dab45_row11_col2,#T_dab45_row12_col0,#T_dab45_row12_col1,#T_dab45_row12_col2,#T_dab45_row13_col0,#T_dab45_row13_col1,#T_dab45_row13_col2,#T_dab45_row14_col0,#T_dab45_row14_col1,#T_dab45_row14_col2,#T_dab45_row15_col0,#T_dab45_row15_col1,#T_dab45_row15_col2,#T_dab45_row16_col0,#T_dab45_row16_col1,#T_dab45_row16_col2,#T_dab45_row17_col0,#T_dab45_row17_col1,#T_dab45_row17_col2,#T_dab45_row18_col0,#T_dab45_row18_col1,#T_dab45_row18_col2,#T_dab45_row19_col0,#T_dab45_row19_col1,#T_dab45_row19_col2,#T_dab45_row20_col0,#T_dab45_row20_col1,#T_dab45_row20_col2,#T_dab45_row21_col0,#T_dab45_row21_col1,#T_dab45_row21_col2,#T_dab45_row22_col0,#T_dab45_row22_col1,#T_dab45_row22_col2,#T_dab45_row23_col0,#T_dab45_row23_col1,#T_dab45_row23_col2,#T_dab45_row24_col0,#T_dab45_row24_col1,#T_dab45_row24_col2,#T_dab45_row25_col0,#T_dab45_row25_col1,#T_dab45_row25_col2,#T_dab45_row26_col0,#T_dab45_row26_col1,#T_dab45_row26_col2,#T_dab45_row27_col0,#T_dab45_row27_col1,#T_dab45_row27_col2,#T_dab45_row28_col0,#T_dab45_row28_col1,#T_dab45_row28_col2{
+        text-align:  left;
+        white-space:  pre-wrap;
+    }&lt;/style&gt;&lt;table style=&quot;display:inline; padding-right: 20px&quot; id=&quot;T_dab45_&quot;  class=&quot;tex2jax_ignore&quot;&gt;&lt;caption style=&quot;font-weight: bold; font-size:120%&quot;&gt;Attributes&lt;/caption style=&quot;font-weight: bold; font-size:120%&quot;&gt;&lt;thead&gt;    &lt;tr&gt;        &lt;th class=&quot;col_heading level0 col0&quot; &gt;TQL Expression&lt;/th&gt;        &lt;th class=&quot;col_heading level0 col1&quot; &gt;Description&lt;/th&gt;        &lt;th class=&quot;col_heading level0 col2&quot; &gt;Type&lt;/th&gt;    &lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;
+            &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row0_col0&quot; class=&quot;data row0 col0&quot; &gt;activity.activity_id&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row0_col1&quot; class=&quot;data row0 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row0_col2&quot; class=&quot;data row0 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row1_col0&quot; class=&quot;data row1 col0&quot; &gt;activity.conversion&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row1_col1&quot; class=&quot;data row1 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row1_col2&quot; class=&quot;data row1 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row2_col0&quot; class=&quot;data row2 col0&quot; &gt;activity.event_time&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row2_col1&quot; class=&quot;data row2 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row2_col2&quot; class=&quot;data row2 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row3_col0&quot; class=&quot;data row3 col0&quot; &gt;activity.user_id&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row3_col1&quot; class=&quot;data row3 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row3_col2&quot; class=&quot;data row3 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row4_col0&quot; class=&quot;data row4 col0&quot; &gt;bid.ad_size&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row4_col1&quot; class=&quot;data row4 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row4_col2&quot; class=&quot;data row4 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row5_col0&quot; class=&quot;data row5 col0&quot; &gt;bid.bid&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row5_col1&quot; class=&quot;data row5 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row5_col2&quot; class=&quot;data row5 col2&quot; &gt;double&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row6_col0&quot; class=&quot;data row6 col0&quot; &gt;bid.event_time&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row6_col1&quot; class=&quot;data row6 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row6_col2&quot; class=&quot;data row6 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row7_col0&quot; class=&quot;data row7 col0&quot; &gt;bid.ghosted&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row7_col1&quot; class=&quot;data row7 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row7_col2&quot; class=&quot;data row7 col2&quot; &gt;boolean&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row8_col0&quot; class=&quot;data row8 col0&quot; &gt;bid.request_id&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row8_col1&quot; class=&quot;data row8 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row8_col2&quot; class=&quot;data row8 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row9_col0&quot; class=&quot;data row9 col0&quot; &gt;bid.user_id&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row9_col1&quot; class=&quot;data row9 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row9_col2&quot; class=&quot;data row9 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row10_col0&quot; class=&quot;data row10 col0&quot; &gt;bid.won&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row10_col1&quot; class=&quot;data row10 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row10_col2&quot; class=&quot;data row10 col2&quot; &gt;boolean&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row11_col0&quot; class=&quot;data row11 col0&quot; &gt;duration&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row11_col1&quot; class=&quot;data row11 col1&quot; &gt;The duration of the event. Typically used with generated events.&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row11_col2&quot; class=&quot;data row11 col2&quot; &gt;long&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row12_col0&quot; class=&quot;data row12 col0&quot; &gt;event&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row12_col1&quot; class=&quot;data row12 col1&quot; &gt;The current event object&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row12_col2&quot; class=&quot;data row12 col2&quot; &gt;event&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row13_col0&quot; class=&quot;data row13 col0&quot; &gt;generated&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row13_col1&quot; class=&quot;data row13 col1&quot; &gt;This event was created by generate_events()&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row13_col2&quot; class=&quot;data row13 col2&quot; &gt;boolean&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row14_col0&quot; class=&quot;data row14 col0&quot; &gt;generated_weight&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row14_col1&quot; class=&quot;data row14 col1&quot; &gt;The weight to apply to the the sample&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row14_col2&quot; class=&quot;data row14 col2&quot; &gt;double&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row15_col0&quot; class=&quot;data row15 col0&quot; &gt;id&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row15_col1&quot; class=&quot;data row15 col1&quot; &gt;The auto-generated event id&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row15_col2&quot; class=&quot;data row15 col2&quot; &gt;long&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row16_col0&quot; class=&quot;data row16 col0&quot; &gt;index&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row16_col1&quot; class=&quot;data row16 col1&quot; &gt;The index of the current event in the timeline&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row16_col2&quot; class=&quot;data row16 col2&quot; &gt;integer&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row17_col0&quot; class=&quot;data row17 col0&quot; &gt;outcome&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row17_col1&quot; class=&quot;data row17 col1&quot; &gt;The outcome event.  Only used in conjunction with SUM_OPPORTUNITIES() and CAUSAL_EFFFCT&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row17_col2&quot; class=&quot;data row17 col2&quot; &gt;event&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row18_col0&quot; class=&quot;data row18 col0&quot; &gt;timeline.events&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row18_col1&quot; class=&quot;data row18 col1&quot; &gt;Time-ordered array of events&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row18_col2&quot; class=&quot;data row18 col2&quot; &gt;array&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row19_col0&quot; class=&quot;data row19 col0&quot; &gt;timeline.id&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row19_col1&quot; class=&quot;data row19 col1&quot; &gt;Shared timeline id&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row19_col2&quot; class=&quot;data row19 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row20_col0&quot; class=&quot;data row20 col0&quot; &gt;timestamp&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row20_col1&quot; class=&quot;data row20 col1&quot; &gt;The timestamp of the event&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row20_col2&quot; class=&quot;data row20 col2&quot; &gt;long&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row21_col0&quot; class=&quot;data row21 col0&quot; &gt;type&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row21_col1&quot; class=&quot;data row21 col1&quot; &gt;The event type of this event&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row21_col2&quot; class=&quot;data row21 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row22_col0&quot; class=&quot;data row22 col0&quot; &gt;user.age&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row22_col1&quot; class=&quot;data row22 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row22_col2&quot; class=&quot;data row22 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row23_col0&quot; class=&quot;data row23 col0&quot; &gt;user.duration&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row23_col1&quot; class=&quot;data row23 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row23_col2&quot; class=&quot;data row23 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row24_col0&quot; class=&quot;data row24 col0&quot; &gt;user.gender&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row24_col1&quot; class=&quot;data row24 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row24_col2&quot; class=&quot;data row24 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row25_col0&quot; class=&quot;data row25 col0&quot; &gt;user.group&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row25_col1&quot; class=&quot;data row25 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row25_col2&quot; class=&quot;data row25 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row26_col0&quot; class=&quot;data row26 col0&quot; &gt;user.region&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row26_col1&quot; class=&quot;data row26 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row26_col2&quot; class=&quot;data row26 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row27_col0&quot; class=&quot;data row27 col0&quot; &gt;user.timestamp&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row27_col1&quot; class=&quot;data row27 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row27_col2&quot; class=&quot;data row27 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_dab45_row28_col0&quot; class=&quot;data row28 col0&quot; &gt;user.user_id&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row28_col1&quot; class=&quot;data row28 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_dab45_row28_col2&quot; class=&quot;data row28 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table style=&quot;display:inline; padding-right: 20px&quot;&gt;
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">load_table</span><span class="p">(</span><span class="s1">&#39;advertising_funnel_data&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<style  type="text/css" >
+    #T_e8c57_ th {
+          text-align: left;
+    }#T_e8c57_row0_col0,#T_e8c57_row0_col1,#T_e8c57_row0_col2,#T_e8c57_row0_col3,#T_e8c57_row0_col4{
+            text-align:  left;
+            white-space:  pre-wrap;
+        }</style><table style="display:inline; padding-right: 20px" id="T_e8c57_"  class="tex2jax_ignore"><caption style="font-weight: bold; font-size:120%">Table Overview</caption style="font-weight: bold; font-size:120%"><thead>    <tr>        <th class="col_heading level0 col0" >id</th>        <th class="col_heading level0 col1" >name</th>        <th class="col_heading level0 col2" >description</th>        <th class="col_heading level0 col3" >timeseries</th>        <th class="col_heading level0 col4" >status</th>    </tr></thead><tbody>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>            &lt;tr&gt;
+                            &lt;td id=&quot;T_e8c57_row0_col0&quot; class=&quot;data row0 col0&quot; &gt;102&lt;/td&gt;
+                    &lt;td id=&quot;T_e8c57_row0_col1&quot; class=&quot;data row0 col1&quot; &gt;advertising_funnel_data&lt;/td&gt;
+                    &lt;td id=&quot;T_e8c57_row0_col2&quot; class=&quot;data row0 col2&quot; &gt;No description yet added&lt;/td&gt;
+                    &lt;td id=&quot;T_e8c57_row0_col3&quot; class=&quot;data row0 col3&quot; &gt;[&#39;bid&#39;, &#39;activity&#39;, &#39;user&#39;]&lt;/td&gt;
+                    &lt;td id=&quot;T_e8c57_row0_col4&quot; class=&quot;data row0 col4&quot; &gt;ready for queries&lt;/td&gt;
+        &lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table style=&quot;display:inline; padding-right: 20px&quot;&gt;&lt;br&gt;&lt;style  type=&quot;text/css&quot; &gt;
+#T_46693_ th {
+      text-align: left;
+}#T_46693_row0_col0,#T_46693_row0_col1,#T_46693_row1_col0,#T_46693_row1_col1,#T_46693_row2_col0,#T_46693_row2_col1,#T_46693_row3_col0,#T_46693_row3_col1,#T_46693_row4_col0,#T_46693_row4_col1,#T_46693_row5_col0,#T_46693_row5_col1,#T_46693_row6_col0,#T_46693_row6_col1,#T_46693_row7_col0,#T_46693_row7_col1,#T_46693_row8_col0,#T_46693_row8_col1{
+        text-align:  left;
+        white-space:  pre-wrap;
+    }&lt;/style&gt;&lt;table style=&quot;display:inline; padding-right: 20px&quot; id=&quot;T_46693_&quot;  class=&quot;tex2jax_ignore&quot;&gt;&lt;caption style=&quot;font-weight: bold; font-size:120%&quot;&gt;Timeline Statistics&lt;/caption style=&quot;font-weight: bold; font-size:120%&quot;&gt;&lt;thead&gt;    &lt;tr&gt;        &lt;th class=&quot;col_heading level0 col0&quot; &gt;0&lt;/th&gt;        &lt;th class=&quot;col_heading level0 col1&quot; &gt;1&lt;/th&gt;    &lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;
+            &lt;tr&gt;
+                            &lt;td id=&quot;T_46693_row0_col0&quot; class=&quot;data row0 col0&quot; &gt;Total Timelines&lt;/td&gt;
+                    &lt;td id=&quot;T_46693_row0_col1&quot; class=&quot;data row0 col1&quot; &gt;1000&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_46693_row1_col0&quot; class=&quot;data row1 col0&quot; &gt;Smallest Timeline&lt;/td&gt;
+                    &lt;td id=&quot;T_46693_row1_col1&quot; class=&quot;data row1 col1&quot; &gt;1 events&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_46693_row2_col0&quot; class=&quot;data row2 col0&quot; &gt;Largest Timeline&lt;/td&gt;
+                    &lt;td id=&quot;T_46693_row2_col1&quot; class=&quot;data row2 col1&quot; &gt;904 events&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_46693_row3_col0&quot; class=&quot;data row3 col0&quot; &gt;Min Timestamp&lt;/td&gt;
+                    &lt;td id=&quot;T_46693_row3_col1&quot; class=&quot;data row3 col1&quot; &gt;2021-01-01 00:00:00&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_46693_row4_col0&quot; class=&quot;data row4 col0&quot; &gt;Max Timestamp&lt;/td&gt;
+                    &lt;td id=&quot;T_46693_row4_col1&quot; class=&quot;data row4 col1&quot; &gt;2021-01-14 23:59:59&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_46693_row5_col0&quot; class=&quot;data row5 col0&quot; &gt;Total Events&lt;/td&gt;
+                    &lt;td id=&quot;T_46693_row5_col1&quot; class=&quot;data row5 col1&quot; &gt;198393&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_46693_row6_col0&quot; class=&quot;data row6 col0&quot; &gt;Activity Events&lt;/td&gt;
+                    &lt;td id=&quot;T_46693_row6_col1&quot; class=&quot;data row6 col1&quot; &gt;25416&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_46693_row7_col0&quot; class=&quot;data row7 col0&quot; &gt;Bid Events&lt;/td&gt;
+                    &lt;td id=&quot;T_46693_row7_col1&quot; class=&quot;data row7 col1&quot; &gt;171977&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_46693_row8_col0&quot; class=&quot;data row8 col0&quot; &gt;User Events&lt;/td&gt;
+                    &lt;td id=&quot;T_46693_row8_col1&quot; class=&quot;data row8 col1&quot; &gt;1000&lt;/td&gt;
+        &lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table style=&quot;display:inline; padding-right: 20px&quot;&gt;&lt;br&gt;&lt;style  type=&quot;text/css&quot; &gt;
+#T_0b48d_ th {
+      text-align: left;
+}#T_0b48d_row0_col0,#T_0b48d_row0_col1,#T_0b48d_row0_col2,#T_0b48d_row1_col0,#T_0b48d_row1_col1,#T_0b48d_row1_col2,#T_0b48d_row2_col0,#T_0b48d_row2_col1,#T_0b48d_row2_col2,#T_0b48d_row3_col0,#T_0b48d_row3_col1,#T_0b48d_row3_col2,#T_0b48d_row4_col0,#T_0b48d_row4_col1,#T_0b48d_row4_col2,#T_0b48d_row5_col0,#T_0b48d_row5_col1,#T_0b48d_row5_col2,#T_0b48d_row6_col0,#T_0b48d_row6_col1,#T_0b48d_row6_col2,#T_0b48d_row7_col0,#T_0b48d_row7_col1,#T_0b48d_row7_col2,#T_0b48d_row8_col0,#T_0b48d_row8_col1,#T_0b48d_row8_col2,#T_0b48d_row9_col0,#T_0b48d_row9_col1,#T_0b48d_row9_col2,#T_0b48d_row10_col0,#T_0b48d_row10_col1,#T_0b48d_row10_col2,#T_0b48d_row11_col0,#T_0b48d_row11_col1,#T_0b48d_row11_col2,#T_0b48d_row12_col0,#T_0b48d_row12_col1,#T_0b48d_row12_col2,#T_0b48d_row13_col0,#T_0b48d_row13_col1,#T_0b48d_row13_col2,#T_0b48d_row14_col0,#T_0b48d_row14_col1,#T_0b48d_row14_col2,#T_0b48d_row15_col0,#T_0b48d_row15_col1,#T_0b48d_row15_col2,#T_0b48d_row16_col0,#T_0b48d_row16_col1,#T_0b48d_row16_col2,#T_0b48d_row17_col0,#T_0b48d_row17_col1,#T_0b48d_row17_col2,#T_0b48d_row18_col0,#T_0b48d_row18_col1,#T_0b48d_row18_col2,#T_0b48d_row19_col0,#T_0b48d_row19_col1,#T_0b48d_row19_col2,#T_0b48d_row20_col0,#T_0b48d_row20_col1,#T_0b48d_row20_col2,#T_0b48d_row21_col0,#T_0b48d_row21_col1,#T_0b48d_row21_col2,#T_0b48d_row22_col0,#T_0b48d_row22_col1,#T_0b48d_row22_col2,#T_0b48d_row23_col0,#T_0b48d_row23_col1,#T_0b48d_row23_col2,#T_0b48d_row24_col0,#T_0b48d_row24_col1,#T_0b48d_row24_col2,#T_0b48d_row25_col0,#T_0b48d_row25_col1,#T_0b48d_row25_col2,#T_0b48d_row26_col0,#T_0b48d_row26_col1,#T_0b48d_row26_col2,#T_0b48d_row27_col0,#T_0b48d_row27_col1,#T_0b48d_row27_col2,#T_0b48d_row28_col0,#T_0b48d_row28_col1,#T_0b48d_row28_col2{
+        text-align:  left;
+        white-space:  pre-wrap;
+    }&lt;/style&gt;&lt;table style=&quot;display:inline; padding-right: 20px&quot; id=&quot;T_0b48d_&quot;  class=&quot;tex2jax_ignore&quot;&gt;&lt;caption style=&quot;font-weight: bold; font-size:120%&quot;&gt;Attributes&lt;/caption style=&quot;font-weight: bold; font-size:120%&quot;&gt;&lt;thead&gt;    &lt;tr&gt;        &lt;th class=&quot;col_heading level0 col0&quot; &gt;TQL Expression&lt;/th&gt;        &lt;th class=&quot;col_heading level0 col1&quot; &gt;Description&lt;/th&gt;        &lt;th class=&quot;col_heading level0 col2&quot; &gt;Type&lt;/th&gt;    &lt;/tr&gt;&lt;/thead&gt;&lt;tbody&gt;
+            &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row0_col0&quot; class=&quot;data row0 col0&quot; &gt;activity.activity_id&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row0_col1&quot; class=&quot;data row0 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row0_col2&quot; class=&quot;data row0 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row1_col0&quot; class=&quot;data row1 col0&quot; &gt;activity.conversion&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row1_col1&quot; class=&quot;data row1 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row1_col2&quot; class=&quot;data row1 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row2_col0&quot; class=&quot;data row2 col0&quot; &gt;activity.event_time&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row2_col1&quot; class=&quot;data row2 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row2_col2&quot; class=&quot;data row2 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row3_col0&quot; class=&quot;data row3 col0&quot; &gt;activity.user_id&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row3_col1&quot; class=&quot;data row3 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row3_col2&quot; class=&quot;data row3 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row4_col0&quot; class=&quot;data row4 col0&quot; &gt;bid.ad_size&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row4_col1&quot; class=&quot;data row4 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row4_col2&quot; class=&quot;data row4 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row5_col0&quot; class=&quot;data row5 col0&quot; &gt;bid.bid&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row5_col1&quot; class=&quot;data row5 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row5_col2&quot; class=&quot;data row5 col2&quot; &gt;double&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row6_col0&quot; class=&quot;data row6 col0&quot; &gt;bid.event_time&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row6_col1&quot; class=&quot;data row6 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row6_col2&quot; class=&quot;data row6 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row7_col0&quot; class=&quot;data row7 col0&quot; &gt;bid.ghosted&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row7_col1&quot; class=&quot;data row7 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row7_col2&quot; class=&quot;data row7 col2&quot; &gt;boolean&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row8_col0&quot; class=&quot;data row8 col0&quot; &gt;bid.request_id&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row8_col1&quot; class=&quot;data row8 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row8_col2&quot; class=&quot;data row8 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row9_col0&quot; class=&quot;data row9 col0&quot; &gt;bid.user_id&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row9_col1&quot; class=&quot;data row9 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row9_col2&quot; class=&quot;data row9 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row10_col0&quot; class=&quot;data row10 col0&quot; &gt;bid.won&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row10_col1&quot; class=&quot;data row10 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row10_col2&quot; class=&quot;data row10 col2&quot; &gt;boolean&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row11_col0&quot; class=&quot;data row11 col0&quot; &gt;duration&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row11_col1&quot; class=&quot;data row11 col1&quot; &gt;The duration of the event. Typically used with generated events.&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row11_col2&quot; class=&quot;data row11 col2&quot; &gt;long&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row12_col0&quot; class=&quot;data row12 col0&quot; &gt;event&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row12_col1&quot; class=&quot;data row12 col1&quot; &gt;The current event object&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row12_col2&quot; class=&quot;data row12 col2&quot; &gt;event&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row13_col0&quot; class=&quot;data row13 col0&quot; &gt;generated&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row13_col1&quot; class=&quot;data row13 col1&quot; &gt;This event was created by generate_events()&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row13_col2&quot; class=&quot;data row13 col2&quot; &gt;boolean&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row14_col0&quot; class=&quot;data row14 col0&quot; &gt;generated_weight&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row14_col1&quot; class=&quot;data row14 col1&quot; &gt;The weight to apply to the the sample&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row14_col2&quot; class=&quot;data row14 col2&quot; &gt;double&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row15_col0&quot; class=&quot;data row15 col0&quot; &gt;id&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row15_col1&quot; class=&quot;data row15 col1&quot; &gt;The auto-generated event id&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row15_col2&quot; class=&quot;data row15 col2&quot; &gt;long&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row16_col0&quot; class=&quot;data row16 col0&quot; &gt;index&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row16_col1&quot; class=&quot;data row16 col1&quot; &gt;The index of the current event in the timeline&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row16_col2&quot; class=&quot;data row16 col2&quot; &gt;integer&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row17_col0&quot; class=&quot;data row17 col0&quot; &gt;outcome&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row17_col1&quot; class=&quot;data row17 col1&quot; &gt;The outcome event.  Only used in conjunction with SUM_OPPORTUNITIES() and CAUSAL_EFFFCT&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row17_col2&quot; class=&quot;data row17 col2&quot; &gt;event&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row18_col0&quot; class=&quot;data row18 col0&quot; &gt;timeline.events&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row18_col1&quot; class=&quot;data row18 col1&quot; &gt;Time-ordered array of events&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row18_col2&quot; class=&quot;data row18 col2&quot; &gt;array&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row19_col0&quot; class=&quot;data row19 col0&quot; &gt;timeline.id&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row19_col1&quot; class=&quot;data row19 col1&quot; &gt;Shared timeline id&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row19_col2&quot; class=&quot;data row19 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row20_col0&quot; class=&quot;data row20 col0&quot; &gt;timestamp&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row20_col1&quot; class=&quot;data row20 col1&quot; &gt;The timestamp of the event&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row20_col2&quot; class=&quot;data row20 col2&quot; &gt;long&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row21_col0&quot; class=&quot;data row21 col0&quot; &gt;type&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row21_col1&quot; class=&quot;data row21 col1&quot; &gt;The event type of this event&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row21_col2&quot; class=&quot;data row21 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row22_col0&quot; class=&quot;data row22 col0&quot; &gt;user.age&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row22_col1&quot; class=&quot;data row22 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row22_col2&quot; class=&quot;data row22 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row23_col0&quot; class=&quot;data row23 col0&quot; &gt;user.duration&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row23_col1&quot; class=&quot;data row23 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row23_col2&quot; class=&quot;data row23 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row24_col0&quot; class=&quot;data row24 col0&quot; &gt;user.gender&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row24_col1&quot; class=&quot;data row24 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row24_col2&quot; class=&quot;data row24 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row25_col0&quot; class=&quot;data row25 col0&quot; &gt;user.group&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row25_col1&quot; class=&quot;data row25 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row25_col2&quot; class=&quot;data row25 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row26_col0&quot; class=&quot;data row26 col0&quot; &gt;user.region&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row26_col1&quot; class=&quot;data row26 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row26_col2&quot; class=&quot;data row26 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row27_col0&quot; class=&quot;data row27 col0&quot; &gt;user.timestamp&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row27_col1&quot; class=&quot;data row27 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row27_col2&quot; class=&quot;data row27 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_0b48d_row28_col0&quot; class=&quot;data row28 col0&quot; &gt;user.user_id&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row28_col1&quot; class=&quot;data row28 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_0b48d_row28_col2&quot; class=&quot;data row28 col2&quot; &gt;string&lt;/td&gt;
+        &lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table style=&quot;display:inline; padding-right: 20px&quot;&gt;
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">show_tables</span><span class="p">()</span>
+</pre></div>
+</div>
+<style  type="text/css" >
+    #T_b1a90_ th {
+          text-align: left;
+    }#T_b1a90_row0_col0,#T_b1a90_row0_col1,#T_b1a90_row0_col2,#T_b1a90_row0_col3,#T_b1a90_row0_col4,#T_b1a90_row0_col5,#T_b1a90_row0_col6,#T_b1a90_row1_col0,#T_b1a90_row1_col1,#T_b1a90_row1_col2,#T_b1a90_row1_col3,#T_b1a90_row1_col4,#T_b1a90_row1_col5,#T_b1a90_row1_col6,#T_b1a90_row2_col0,#T_b1a90_row2_col1,#T_b1a90_row2_col2,#T_b1a90_row2_col3,#T_b1a90_row2_col4,#T_b1a90_row2_col5,#T_b1a90_row2_col6,#T_b1a90_row3_col0,#T_b1a90_row3_col1,#T_b1a90_row3_col2,#T_b1a90_row3_col3,#T_b1a90_row3_col4,#T_b1a90_row3_col5,#T_b1a90_row3_col6,#T_b1a90_row4_col0,#T_b1a90_row4_col1,#T_b1a90_row4_col2,#T_b1a90_row4_col3,#T_b1a90_row4_col4,#T_b1a90_row4_col5,#T_b1a90_row4_col6,#T_b1a90_row5_col0,#T_b1a90_row5_col1,#T_b1a90_row5_col2,#T_b1a90_row5_col3,#T_b1a90_row5_col4,#T_b1a90_row5_col5,#T_b1a90_row5_col6,#T_b1a90_row6_col0,#T_b1a90_row6_col1,#T_b1a90_row6_col2,#T_b1a90_row6_col3,#T_b1a90_row6_col4,#T_b1a90_row6_col5,#T_b1a90_row6_col6{
+            text-align:  left;
+            white-space:  pre-wrap;
+        }</style><table style="display:inline; padding-right: 20px" id="T_b1a90_"  class="tex2jax_ignore"><thead>    <tr>        <th class="col_heading level0 col0" >id</th>        <th class="col_heading level0 col1" >name</th>        <th class="col_heading level0 col2" >description</th>        <th class="col_heading level0 col3" >timeseries</th>        <th class="col_heading level0 col4" >timelines</th>        <th class="col_heading level0 col5" >events</th>        <th class="col_heading level0 col6" >status</th>    </tr></thead><tbody>
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>            &lt;tr&gt;
+                            &lt;td id=&quot;T_b1a90_row0_col0&quot; class=&quot;data row0 col0&quot; &gt;1&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row0_col1&quot; class=&quot;data row0 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row0_col2&quot; class=&quot;data row0 col2&quot; &gt;Acheron synthetic data, 2000 users, 5 requests per user, v1.1&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row0_col3&quot; class=&quot;data row0 col3&quot; &gt;[&#39;request&#39;, &#39;conversion&#39;, &#39;user&#39;]&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row0_col4&quot; class=&quot;data row0 col4&quot; &gt;2000.000000&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row0_col5&quot; class=&quot;data row0 col5&quot; &gt;14220.000000&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row0_col6&quot; class=&quot;data row0 col6&quot; &gt;ready for queries&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_b1a90_row1_col0&quot; class=&quot;data row1 col0&quot; &gt;2&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row1_col1&quot; class=&quot;data row1 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row1_col2&quot; class=&quot;data row1 col2&quot; &gt;Acheron 2 synthetic data, reasonably_rich, 200 users, 10 days, v1.1&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row1_col3&quot; class=&quot;data row1 col3&quot; &gt;[&#39;request&#39;, &#39;conversion&#39;, &#39;user&#39;]&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row1_col4&quot; class=&quot;data row1 col4&quot; &gt;200.000000&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row1_col5&quot; class=&quot;data row1 col5&quot; &gt;13464.000000&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row1_col6&quot; class=&quot;data row1 col6&quot; &gt;ready for queries&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_b1a90_row2_col0&quot; class=&quot;data row2 col0&quot; &gt;3&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row2_col1&quot; class=&quot;data row2 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row2_col2&quot; class=&quot;data row2 col2&quot; &gt;Lethe synthetic data, demo_set, random treatment, 1000 users, 14 days, v1.3&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row2_col3&quot; class=&quot;data row2 col3&quot; &gt;[&#39;bid&#39;, &#39;activity&#39;, &#39;user&#39;]&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row2_col4&quot; class=&quot;data row2 col4&quot; &gt;1000.000000&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row2_col5&quot; class=&quot;data row2 col5&quot; &gt;198341.000000&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row2_col6&quot; class=&quot;data row2 col6&quot; &gt;ready for queries&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_b1a90_row3_col0&quot; class=&quot;data row3 col0&quot; &gt;4&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row3_col1&quot; class=&quot;data row3 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row3_col2&quot; class=&quot;data row3 col2&quot; &gt;Lethe synthetic data, demo_set, random users, 1000 users, 14 days, v1.3&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row3_col3&quot; class=&quot;data row3 col3&quot; &gt;[&#39;bid&#39;, &#39;activity&#39;, &#39;user&#39;]&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row3_col4&quot; class=&quot;data row3 col4&quot; &gt;1000.000000&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row3_col5&quot; class=&quot;data row3 col5&quot; &gt;198393.000000&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row3_col6&quot; class=&quot;data row3 col6&quot; &gt;ready for queries&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_b1a90_row4_col0&quot; class=&quot;data row4 col0&quot; &gt;10&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row4_col1&quot; class=&quot;data row4 col1&quot; &gt;unittest&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row4_col2&quot; class=&quot;data row4 col2&quot; &gt;this is a unit test project&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row4_col3&quot; class=&quot;data row4 col3&quot; &gt;[&#39;request&#39;]&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row4_col4&quot; class=&quot;data row4 col4&quot; &gt;1990.000000&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row4_col5&quot; class=&quot;data row4 col5&quot; &gt;12220.000000&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row4_col6&quot; class=&quot;data row4 col6&quot; &gt;ready for queries&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_b1a90_row5_col0&quot; class=&quot;data row5 col0&quot; &gt;101&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row5_col1&quot; class=&quot;data row5 col1&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row5_col2&quot; class=&quot;data row5 col2&quot; &gt;unittest&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row5_col3&quot; class=&quot;data row5 col3&quot; &gt;[&#39;unittest&#39;]&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row5_col4&quot; class=&quot;data row5 col4&quot; &gt;nan&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row5_col5&quot; class=&quot;data row5 col5&quot; &gt;nan&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row5_col6&quot; class=&quot;data row5 col6&quot; &gt;timelines not yet created&lt;/td&gt;
+        &lt;/tr&gt;
+        &lt;tr&gt;
+                            &lt;td id=&quot;T_b1a90_row6_col0&quot; class=&quot;data row6 col0&quot; &gt;102&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row6_col1&quot; class=&quot;data row6 col1&quot; &gt;advertising_funnel_data&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row6_col2&quot; class=&quot;data row6 col2&quot; &gt;None&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row6_col3&quot; class=&quot;data row6 col3&quot; &gt;[&#39;bid&#39;, &#39;activity&#39;, &#39;user&#39;]&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row6_col4&quot; class=&quot;data row6 col4&quot; &gt;1000.000000&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row6_col5&quot; class=&quot;data row6 col5&quot; &gt;198393.000000&lt;/td&gt;
+                    &lt;td id=&quot;T_b1a90_row6_col6&quot; class=&quot;data row6 col6&quot; &gt;ready for queries&lt;/td&gt;
+        &lt;/tr&gt;
+&lt;/tbody&gt;&lt;/table style=&quot;display:inline; padding-right: 20px&quot;&gt;
+</pre></div>
+</div>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">select</span><span class="p">(</span><span class="s1">&#39;*&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">from_events</span><span class="p">(</span><span class="s1">&#39;advertising_funnel_data&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">limit</span><span class="p">(</span><span class="mi">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<h4><em>Query results:</em></h4>partition "_default"
+<div>
+<style scoped>
+    .dataframe tbody tr th:only-of-type {
+        vertical-align: middle;
+    }
+<div class="highlight-none notranslate"><div class="highlight"><pre><span></span>.dataframe tbody tr th {
+    vertical-align: top;
+}
+
+.dataframe thead th {
+    text-align: right;
+}
+</pre></div>
+</div>
+</style>
+<table border="1" class="dataframe tex2jax_ignore">
+  <thead>
+    <tr style="text-align: right;">
+      <th></th>
+      <th>activity_activity_id</th>
+      <th>activity_conversion</th>
+      <th>activity_event_time</th>
+      <th>activity_user_id</th>
+      <th>bid_ad_size</th>
+      <th>bid_bid</th>
+      <th>bid_event_time</th>
+      <th>bid_ghosted</th>
+      <th>bid_request_id</th>
+      <th>bid_user_id</th>
+      <th>...</th>
+      <th>timeline_id</th>
+      <th>timestamp</th>
+      <th>type</th>
+      <th>user_age</th>
+      <th>user_duration</th>
+      <th>user_gender</th>
+      <th>user_group</th>
+      <th>user_region</th>
+      <th>user_timestamp</th>
+      <th>user_user_id</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th>0</th>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>...</td>
+      <td>u252</td>
+      <td>1609459200000</td>
+      <td>user</td>
+      <td>55plus</td>
+      <td>None</td>
+      <td>male</td>
+      <td>influenced</td>
+      <td>south</td>
+      <td>2021-01-01</td>
+      <td>u252</td>
+    </tr>
+    <tr>
+      <th>1</th>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>big</td>
+      <td>1.0</td>
+      <td>2021-01-02 00:02:36</td>
+      <td>false</td>
+      <td>r13260</td>
+      <td>u252</td>
+      <td>...</td>
+      <td>u252</td>
+      <td>1609545756000</td>
+      <td>bid</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>2</th>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>big</td>
+      <td>1.0</td>
+      <td>2021-01-02 00:16:41</td>
+      <td>false</td>
+      <td>r13376</td>
+      <td>u252</td>
+      <td>...</td>
+      <td>u252</td>
+      <td>1609546601000</td>
+      <td>bid</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>3</th>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>small</td>
+      <td>1.0</td>
+      <td>2021-01-02 00:30:55</td>
+      <td>false</td>
+      <td>r13509</td>
+      <td>u252</td>
+      <td>...</td>
+      <td>u252</td>
+      <td>1609547455000</td>
+      <td>bid</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>4</th>
+      <td>i176</td>
+      <td>product_view</td>
+      <td>2021-01-02 00:57:47</td>
+      <td>u252</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>...</td>
+      <td>u252</td>
+      <td>1609549067000</td>
+      <td>activity</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>5</th>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>small</td>
+      <td>1.0</td>
+      <td>2021-01-02 01:04:01</td>
+      <td>false</td>
+      <td>r13737</td>
+      <td>u252</td>
+      <td>...</td>
+      <td>u252</td>
+      <td>1609549441000</td>
+      <td>bid</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>6</th>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>big</td>
+      <td>1.0</td>
+      <td>2021-01-02 01:37:26</td>
+      <td>false</td>
+      <td>r13985</td>
+      <td>u252</td>
+      <td>...</td>
+      <td>u252</td>
+      <td>1609551446000</td>
+      <td>bid</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>7</th>
+      <td>i187</td>
+      <td>product_view</td>
+      <td>2021-01-02 02:15:43</td>
+      <td>u252</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>...</td>
+      <td>u252</td>
+      <td>1609553743000</td>
+      <td>activity</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>8</th>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>big</td>
+      <td>1.0</td>
+      <td>2021-01-02 02:18:30</td>
+      <td>false</td>
+      <td>r14310</td>
+      <td>u252</td>
+      <td>...</td>
+      <td>u252</td>
+      <td>1609553910000</td>
+      <td>bid</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+    <tr>
+      <th>9</th>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>big</td>
+      <td>1.0</td>
+      <td>2021-01-02 03:01:48</td>
+      <td>false</td>
+      <td>r14607</td>
+      <td>u252</td>
+      <td>...</td>
+      <td>u252</td>
+      <td>1609556508000</td>
+      <td>bid</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+      <td>None</td>
+    </tr>
+  </tbody>
+</table>
+<p>10 rows × 27 columns</p>
+</div><h4><em>Query columns:</em></h4><style  type="text/css" >
+#T_8717e_row0_col0,#T_8717e_row0_col1,#T_8717e_row1_col0,#T_8717e_row1_col1,#T_8717e_row2_col0,#T_8717e_row2_col1,#T_8717e_row3_col0,#T_8717e_row3_col1,#T_8717e_row4_col0,#T_8717e_row4_col1,#T_8717e_row5_col0,#T_8717e_row5_col1,#T_8717e_row6_col0,#T_8717e_row6_col1,#T_8717e_row7_col0,#T_8717e_row7_col1,#T_8717e_row8_col0,#T_8717e_row8_col1,#T_8717e_row9_col0,#T_8717e_row9_col1,#T_8717e_row10_col0,#T_8717e_row10_col1,#T_8717e_row11_col0,#T_8717e_row11_col1,#T_8717e_row12_col0,#T_8717e_row12_col1,#T_8717e_row13_col0,#T_8717e_row13_col1,#T_8717e_row14_col0,#T_8717e_row14_col1,#T_8717e_row15_col0,#T_8717e_row15_col1,#T_8717e_row16_col0,#T_8717e_row16_col1,#T_8717e_row17_col0,#T_8717e_row17_col1,#T_8717e_row18_col0,#T_8717e_row18_col1,#T_8717e_row19_col0,#T_8717e_row19_col1,#T_8717e_row20_col0,#T_8717e_row20_col1,#T_8717e_row21_col0,#T_8717e_row21_col1,#T_8717e_row22_col0,#T_8717e_row22_col1,#T_8717e_row23_col0,#T_8717e_row23_col1,#T_8717e_row24_col0,#T_8717e_row24_col1,#T_8717e_row25_col0,#T_8717e_row25_col1,#T_8717e_row26_col0,#T_8717e_row26_col1{
+            white-space:  pre-wrap;
+            text-align:  left;
+        }</style><table id="T_8717e_"  class="tex2jax_ignore"><thead>    <tr>        <th class="blank level0" ></th>        <th class="col_heading level0 col0" >Column Name</th>        <th class="col_heading level0 col1" >TQL Expression</th>    </tr></thead><tbody>
+                <tr>
+                        <th id="T_8717e_level0_row0" class="row_heading level0 row0" >0</th>
+                        <td id="T_8717e_row0_col0" class="data row0 col0" >activity_activity_id</td>
+                        <td id="T_8717e_row0_col1" class="data row0 col1" >activity.activity_id</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row1" class="row_heading level0 row1" >1</th>
+                        <td id="T_8717e_row1_col0" class="data row1 col0" >activity_conversion</td>
+                        <td id="T_8717e_row1_col1" class="data row1 col1" >activity.conversion</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row2" class="row_heading level0 row2" >2</th>
+                        <td id="T_8717e_row2_col0" class="data row2 col0" >activity_event_time</td>
+                        <td id="T_8717e_row2_col1" class="data row2 col1" >activity.event_time</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row3" class="row_heading level0 row3" >3</th>
+                        <td id="T_8717e_row3_col0" class="data row3 col0" >activity_user_id</td>
+                        <td id="T_8717e_row3_col1" class="data row3 col1" >activity.user_id</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row4" class="row_heading level0 row4" >4</th>
+                        <td id="T_8717e_row4_col0" class="data row4 col0" >bid_ad_size</td>
+                        <td id="T_8717e_row4_col1" class="data row4 col1" >bid.ad_size</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row5" class="row_heading level0 row5" >5</th>
+                        <td id="T_8717e_row5_col0" class="data row5 col0" >bid_bid</td>
+                        <td id="T_8717e_row5_col1" class="data row5 col1" >bid.bid</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row6" class="row_heading level0 row6" >6</th>
+                        <td id="T_8717e_row6_col0" class="data row6 col0" >bid_event_time</td>
+                        <td id="T_8717e_row6_col1" class="data row6 col1" >bid.event_time</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row7" class="row_heading level0 row7" >7</th>
+                        <td id="T_8717e_row7_col0" class="data row7 col0" >bid_ghosted</td>
+                        <td id="T_8717e_row7_col1" class="data row7 col1" >bid.ghosted</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row8" class="row_heading level0 row8" >8</th>
+                        <td id="T_8717e_row8_col0" class="data row8 col0" >bid_request_id</td>
+                        <td id="T_8717e_row8_col1" class="data row8 col1" >bid.request_id</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row9" class="row_heading level0 row9" >9</th>
+                        <td id="T_8717e_row9_col0" class="data row9 col0" >bid_user_id</td>
+                        <td id="T_8717e_row9_col1" class="data row9 col1" >bid.user_id</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row10" class="row_heading level0 row10" >10</th>
+                        <td id="T_8717e_row10_col0" class="data row10 col0" >bid_won</td>
+                        <td id="T_8717e_row10_col1" class="data row10 col1" >bid.won</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row11" class="row_heading level0 row11" >11</th>
+                        <td id="T_8717e_row11_col0" class="data row11 col0" >duration</td>
+                        <td id="T_8717e_row11_col1" class="data row11 col1" >duration</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row12" class="row_heading level0 row12" >12</th>
+                        <td id="T_8717e_row12_col0" class="data row12 col0" >generated</td>
+                        <td id="T_8717e_row12_col1" class="data row12 col1" >generated</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row13" class="row_heading level0 row13" >13</th>
+                        <td id="T_8717e_row13_col0" class="data row13 col0" >generated_weight</td>
+                        <td id="T_8717e_row13_col1" class="data row13 col1" >generated_weight</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row14" class="row_heading level0 row14" >14</th>
+                        <td id="T_8717e_row14_col0" class="data row14 col0" >id</td>
+                        <td id="T_8717e_row14_col1" class="data row14 col1" >id</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row15" class="row_heading level0 row15" >15</th>
+                        <td id="T_8717e_row15_col0" class="data row15 col0" >index</td>
+                        <td id="T_8717e_row15_col1" class="data row15 col1" >index</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row16" class="row_heading level0 row16" >16</th>
+                        <td id="T_8717e_row16_col0" class="data row16 col0" >outcome</td>
+                        <td id="T_8717e_row16_col1" class="data row16 col1" >outcome</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row17" class="row_heading level0 row17" >17</th>
+                        <td id="T_8717e_row17_col0" class="data row17 col0" >timeline_id</td>
+                        <td id="T_8717e_row17_col1" class="data row17 col1" >timeline.id</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row18" class="row_heading level0 row18" >18</th>
+                        <td id="T_8717e_row18_col0" class="data row18 col0" >timestamp</td>
+                        <td id="T_8717e_row18_col1" class="data row18 col1" >timestamp</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row19" class="row_heading level0 row19" >19</th>
+                        <td id="T_8717e_row19_col0" class="data row19 col0" >type</td>
+                        <td id="T_8717e_row19_col1" class="data row19 col1" >type</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row20" class="row_heading level0 row20" >20</th>
+                        <td id="T_8717e_row20_col0" class="data row20 col0" >user_age</td>
+                        <td id="T_8717e_row20_col1" class="data row20 col1" >user.age</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row21" class="row_heading level0 row21" >21</th>
+                        <td id="T_8717e_row21_col0" class="data row21 col0" >user_duration</td>
+                        <td id="T_8717e_row21_col1" class="data row21 col1" >user.duration</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row22" class="row_heading level0 row22" >22</th>
+                        <td id="T_8717e_row22_col0" class="data row22 col0" >user_gender</td>
+                        <td id="T_8717e_row22_col1" class="data row22 col1" >user.gender</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row23" class="row_heading level0 row23" >23</th>
+                        <td id="T_8717e_row23_col0" class="data row23 col0" >user_group</td>
+                        <td id="T_8717e_row23_col1" class="data row23 col1" >user.group</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row24" class="row_heading level0 row24" >24</th>
+                        <td id="T_8717e_row24_col0" class="data row24 col0" >user_region</td>
+                        <td id="T_8717e_row24_col1" class="data row24 col1" >user.region</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row25" class="row_heading level0 row25" >25</th>
+                        <td id="T_8717e_row25_col0" class="data row25 col0" >user_timestamp</td>
+                        <td id="T_8717e_row25_col1" class="data row25 col1" >user.timestamp</td>
+            </tr>
+            <tr>
+                        <th id="T_8717e_level0_row26" class="row_heading level0 row26" >26</th>
+                        <td id="T_8717e_row26_col0" class="data row26 col0" >user_user_id</td>
+                        <td id="T_8717e_row26_col1" class="data row26 col1" >user.user_id</td>
+            </tr>
+    </tbody></table><i>query produced 10 rows x 27 columns in 0.47 seconds<i><br><br>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, various.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

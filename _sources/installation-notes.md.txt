@@ -1,0 +1,125 @@
+### Validating Your Installation
+Use the command line tool `noumena` to validate your installation by running `noumena -h`:
+```
+(noumena-venv) jshmoe$ noumena -h
+usage: noumena [-h]
+               {status,conf,start,restart,stop,get-notebooks,test,logs,healthcheck,install-extensions,mlflow}
+               ...
+
+Administrate the Noumena backend
+
+positional arguments:
+  {status,conf,start,restart,stop,get-notebooks,test,logs,healthcheck,install-extensions,mlflow}
+                        operation
+    status              get the current status of the backend
+    conf                show the current noumena configuration
+    start               start the backend if currently running
+    restart             restart the backend
+    stop                stop the backend if currently running
+    get-notebooks       generate notebook content
+    test                run tests against the backend, default log location:
+                        ~/noumena_test*. It accepts any pytest arguments, for
+                        example "noumena test
+                        /path/to/a/specific/testcase.py::MyTest". In addition,
+                        any option arguments can be provided by escaping the
+                        option with the "@" character,for example "@-s"
+    logs                tail logs
+    healthcheck         run a healthcheck
+    install-extensions  install noumena extensions
+    mlflow              start/stop/restart mlflow
+
+optional arguments:
+  -h, --help            show this help message and exit
+```
+
+### Manually Starting the TQL Backend
+The TQL backend can be started at any time using the command `noumena start`:
+```
+(noumena-venv) jshmoe$ noumena start
+[noumena]: starting daedalus... 
+[noumena]: starting icarus... success
+------------------------------------------------------------------
+           Version: 20.1.16
+ Version Timestamp: 2021-07-21 17:34:23
+       Version Age: 6 days, 17 hours, 42 minutes, 59 seconds
+   Filesystem Root: /home/jshmoe/.noumena/files
+ Working Directory: /home/jshmoe/.noumena
+Configuration File: /home/jshmoe/.noumena/noumena_conf.yml
+       Api Gateway: http://localhost:9000
+    Service Status: Icarus: ONLINE, Daedalus: ONLINE
+    Service Uptime: 0 seconds
+------------------------------------------------------------------
+```
+It is also automatically started any time the TQL package is imported in a Python script or Jupyter Notebook, if not already running.  Refer to the [configuration guide]() for info on how to customize your TQL installation.  
+
+
+### Installing Java: 
+To validate you have Java installed:
+```
+$ java -version
+# you should see something like this:
+openjdk version "1.8.0_275"
+```
+In the case where Java is not 1.8, we need to see what versions of Java are available: 
+
+On OSX:
+```
+$ /usr/libexec/java_home -V 
+```
+
+On Linux:
+```
+$ update-alternatives --list java
+```
+
+If you DO NOT see java 1.8.x or higher on this list, you need to install it.  
+
+On OSX:
+The easiest way is via [Homebrew](https://brew.sh/).  See this [link](https://stackoverflow.com/questions/26252591/mac-os-x-and-multiple-java-versions) on managing multiple java versions on OSX.  
+We recommend using [Adopt Open JDK 8](https://github.com/AdoptOpenJDK/homebrew-openjdk):
+``` 
+$ brew tap adoptopenjdk/openjdk 
+$ brew install --cask adoptopenjdk/openjdk/adoptopenjdk8
+# then re-run the java_home command to verify it installed correctly
+$ /usr/libexec/java_home -V 
+```
+Finally, set the environment variable `JAVA_HOME` to the `Home` dir:
+```
+$ export JAVA_HOME='/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home'
+```
+
+### Installing Snappy
+The snappy compression library is utilized to write timelines and datasets in a space-efficient manner.  Installing the `python-snappy` module does *not* install snappy, only the python bindings.  Therefore we must first install it separately, if not already installed:
+
+On OSX:
+```
+$ brew install snappy
+$ brew link snappy # sometimes this step is needed
+$ pip install python-snappy
+and continue with `./bin/dev-environment-setup.sh`
+```
+On DBM-based Linux:
+```
+$ sudo apt-get install python3.7 python3.7-venv python3.7-dev
+$ CPPFLAGS="-I/usr/local/include -L/usr/local/lib" pip install python-snappy
+```
+On RPM-based Linux:
+```
+$ sudo yum install libsnappy-devel or yum install csnappy-devel
+```
+
+### Buidling a Google DataProc for TQL:
+Setting up TQL on Google's managed cloud computing service is identical to setting it up for Jupyter Notebook usage. Reference: https://cloud.google.com/dataproc/docs/tutorials/jupyter-notebook 
+
+When creating a Google DataProc cluster from the web console, Make these changes to the configuration:
+- Enter a custom cluster name
+- Change Image Version to: 2.0 (Ubuntu 18.04 LTS, Hadoop 3.2, Spark 3.1)
+- Check the Enable component gateway checkbox in the Components section
+- Check the Jupyter Notebook checkbox in the Optional components section
+
+After going through the setup wizard, click the Create button and wait for the cluster to be created (~5 minutes)
+
+
+```python
+
+```

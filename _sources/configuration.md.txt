@@ -1,0 +1,67 @@
+# Configuring TQL
+This guide will show you how to configure and customize TQL to fit your needs.  
+
+
+## The Noumena TQL Configuration File
+TQL is configured by a [yaml](https://yaml.org/) file.  You can always see the location of the yaml configuration file by typing `noumena status`:
+```
+(noumena-venv) jshmoe$ noumena status
+------------------------------------------------------------------
+           Version: 20.1.16
+ Version Timestamp: 2021-07-21 17:34:23
+       Version Age: 6 days, 17 hours, 56 minutes, 6 seconds
+   Filesystem Root: /home/jshmoe/.noumena/files
+ Working Directory: /home/jshmoe/.noumena
+Configuration File: /home/jshmoe/.noumena/noumena_conf.yml
+       Api Gateway: http://localhost:9000
+    Service Status: Icarus: OFFLINE, Daedalus: OFFLINE
+    Service Uptime: 
+------------------------------------------------------------------
+```
+
+You can also see the current configuration by using the command `noumena conf`:
+```
+(noumena-venv) jshmoe$ noumena conf
+conf_path: /home/jshmoe/.noumena/noumena_conf.yml
+database:
+  nanml.standalone.db.h2-disk.directory: /home/jshmoe/.noumena/db
+  nanml.standalone.db.instance_type: h2-disk
+filesystem:
+  root: /home/jshmoe/.noumena/files
+icarus:
+...
+```
+
+## Modifying the Configuration
+To modify the configuration, create your own configuration yaml file and apply the changes during a restart of the backend using the -O option.  For example, lets change the filesystem root from the default local directory to a Google Cloud Storage directory, and the Spark master to YARN:
+```
+(noumena-venv) jschmoe$ vim /tmp/noumena-override-conf.yml
+filesystem_root: gs://joe-shoes-bucket/tql/
+daedalus:
+        spark_properties:
+                spark.master: yarn
+```
+
+Now, restart noumena, providing the path to our newly created override file:
+```
+(noumena-venv) jschmoe$ noumena restart -O /tmp/noumena-override-conf.yml
+```
+The override properties will now be applied to your backend.  
+
+## Configuration Properties:
+TODO: list out all modifable properties here
+
+
+
+
+## Install Additional Noumena Jupyter Notebook Content
+Run the following in the Jupyter terminal to get notebook content, such as tutorials, guides, and additional docs:
+```
+mkdir -p /path/to/place/noumena/notebooks
+noumena get-notebooks /path/to/place/noumena/notebooks
+```
+
+
+```python
+
+```

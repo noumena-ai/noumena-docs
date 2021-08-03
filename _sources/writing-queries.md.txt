@@ -1,0 +1,112 @@
+# Writing Queries 
+Writing Queries form the core of TQL's functionality.  In this guide you will learn all of the different aspects the TQL's query API.  
+
+
+```python
+from noumena.tql import *
+```
+
+    -------------------------------------------------------------------
+               Version: 20.1.16-SNAPSHOT
+     Version Timestamp: 2021-07-21 17:34:23
+           Version Age: 11 days, 22 hours, 46 minutes, 40 seconds
+       Filesystem Root: /Users/zkozick/.noumena/files
+     Working Directory: /Users/zkozick/.noumena
+    Configuration File: /Users/zkozick/.noumena/noumena_conf.yml
+           Api Gateway: http://localhost:9000
+        Service Status: Icarus: ONLINE, Daedalus: ONLINE
+        Service Uptime: 5 days, 4 hours, 22 minutes, 39 seconds
+    -------------------------------------------------------------------
+
+
+## The downsample_by() Operator
+the `downsample_by()` operator allows you to conditionally downstample a resultset depending on input.
+
+
+```python
+# Downsampling to an approximate max_record limit
+select(
+  label("IF(type == 'bid', 0, 1)")
+).from_events(4).limit(3).downsample_by(max_records=500, interactive=True)
+# note: interactive flag must be specified, to obtain an accurate estimate of the original resultset size.
+
+# Downsampling to a specficied negative/postive example ratio:
+select(
+  label("IF(type == 'bid', 0, 1)")
+).from_events(4).limit(3).downsample_by(neg_pos_ratio=2)
+
+# Downsampling to pos_sample_rate
+select(
+  label("IF(type == 'bid', 0, 1)")
+).from_events(4).limit(3).downsample_by(pos_sample_rate=0.5).show()
+```
+
+      _label    _weight
+    --------  ---------
+           1          2
+           0          1
+           0          1
+
+
+## The options() Operator
+The following options are available:
+```
+max_columns: the maximum number of columns to return, top N columns is computed from count of non-null values.
+global_min_total_count: require that at least this many rows contain a non-null value, or drop the column.
+apply_feature_filters: flag on/off applying feature filtering (default true)
+apply_charset_filter: flag on/off cleaning the values of numerical and categorical feature columns
+  (default true)
+drop_empty_rows: if on, remove rows" that have no non-null values. (default false)
+expand_numerical_features: expand numerical feature arrays into multiple columns.  (default false)
+drop_numerical_zero_features: drop numerical feature columns that contain all zeros. (default false)
+drop_constant_feature_columns: drop numerical feature columns that are constant (default false)
+throw_expression_errors: use "fail fast" behavior with invalid expressions (default false)
+debug_expressions: return extended debugging information about TQL expression evaluation with the result
+  set.
+fill_na: replace all numerical features with non-numeric values with 0.0.
+numerical_feature_precision: how many decimal places to return.
+numerical_feature_epsilon: abs(val) < eps will be rounded down to zero.
+fix_column_names: specify if backend should rename duplicate column names. (default true)
+```
+
+#### numerical_feature_epsilon
+Numerical features, labels, and weights with a value < epsilon will be rounded down to zero.
+
+
+```python
+select(
+  label(.01), # epsilon will be applied to label columns
+  weight(.01), # epsilon will be applied to weight columns
+  numerical(.01), # epsilon will be applied to numerical feature columns
+  numerical('"foo:.01"'), # epsilon will be to mixed numerical feature columns 
+  categorical(.01), # epsilon will NOT be applied here since the column type is CATEGORICAL
+  .01 # epsilon will NOT be applied here since the column type is METADATA
+).from_events(4).options(numerical_feature_epsilon=1).limit(3).show()
+```
+
+      _label    _weight    _c2  _c3      _c4    _c5
+    --------  ---------  -----  -----  -----  -----
+           0          0      0  foo:0   0.01   0.01
+           0          0      0  foo:0   0.01   0.01
+           0          0      0  foo:0   0.01   0.01
+
+
+#### drop_constant_feature_columns
+
+
+```python
+# constant feature columns will be dropped 
+select(
+  numerical(1.01), #constant numerical feature columns will be dropped
+  categorical('"blue"'), #constant categorical feature columns will be dropped 
+  categorical('if(random() < .5, "cat", "dog")'), # non-constant columns will NOT be dropped
+).from_events(4).options(drop_constant_feature_columns=1).limit(3).show()
+```
+
+    
+
+
+
+```python
+
+```

@@ -1,0 +1,35 @@
+# TQL Terminology and Data Processing Model
+
+## TimeSeries
+
+## Timelines
+TQL uses a unique structure to represent raw time series data called the **Timeline**.  A Timeline is simply an ordered sequence of events belonging to a unique key (i.e. user_id).   Events may also originate from more than one source.  For example, a typically online advertising funnel use case, a user's Timeline might be the combination of a stream of ad opportunities, treatments (i.e. impressions), and conversion activity such as product-views, add-to-carts, and purchases.  
+
+Roughly, construction of these timelines correspond to the following SQL pseudocode:
+```
+SELECT 
+  o.*, t.*, c.*,
+  FROM opportunities o
+  LEFT OUTER JOIN treatments t
+  LEFT OUTER JOIN conversions c
+ GROUP BY user_id
+ ORDER GROUPED VALUES BY timestamp
+ ```
+TQL queries process each timeline as a unit, emitting a row for each event in the timeline (subject to `where()` and `limit()` clauses, among other things):  
+
+![](https://lh5.googleusercontent.com/8DKADTmvm2395GHBPeMWepSgddW2hNjHkqtPLUx5To1z62wdNK3YxHhuMUdaXnz0oL9MHnspi8SzEE6SCoUhUGR1Xau39XY05GS5Gm4zvPjCUrZKfJX7TiX9ATyOV3-trIi1qQaKzgY)
+
+For example, If your input data has 10 timelines with 5 events each, a TQL query with no where clauses or limits will emit a 50 row dataset, one for each event.   
+
+## Query
+
+## ResultSet
+
+## Metrics
+
+## Sampling
+
+
+```python
+
+```

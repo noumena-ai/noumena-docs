@@ -1,0 +1,326 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8" />
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <title>Validating Your Installation &mdash; noumena-tql  documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+  <link rel="stylesheet" href="_static/noumena.css" type="text/css" />
+
+  
+  
+    <link rel="shortcut icon" href="_static/favicon.ico"/>
+  
+
+  
+  
+
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/noumena.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="overview.html" class="icon icon-home"> noumena-tql
+          
+
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <ul>
+<li class="toctree-l1"><a class="reference internal" href="quickstart.html">   Quickstart Guide</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="overview.html">noumena-tql</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="overview.html" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Validating Your Installation</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+          
+            <a href="_sources/installing.md.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="validating-your-installation">
+<h1>Validating Your Installation<a class="headerlink" href="#validating-your-installation" title="Permalink to this headline">¶</a></h1>
+<p>Use the command line tool <code class="docutils literal notranslate"><span class="pre">noumena</span></code> to validate your installation by running <code class="docutils literal notranslate"><span class="pre">noumena</span> <span class="pre">-h</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(noumena-venv) jshmoe$ noumena -h
+usage: noumena [-h]
+               {status,conf,start,restart,stop,get-notebooks,test,logs,healthcheck,install-extensions,mlflow}
+               ...
+
+Administrate the Noumena backend
+
+positional arguments:
+  {status,conf,start,restart,stop,get-notebooks,test,logs,healthcheck,install-extensions,mlflow}
+                        operation
+    status              get the current status of the backend
+    conf                show the current noumena configuration
+    start               start the backend if currently running
+    restart             restart the backend
+    stop                stop the backend if currently running
+    get-notebooks       generate notebook content
+    test                run tests against the backend, default log location:
+                        ~/noumena_test*. It accepts any pytest arguments, for
+                        example &quot;noumena test
+                        /path/to/a/specific/testcase.py::MyTest&quot;. In addition,
+                        any option arguments can be provided by escaping the
+                        option with the &quot;@&quot; character,for example &quot;@-s&quot;
+    logs                tail logs
+    healthcheck         run a healthcheck
+    install-extensions  install noumena extensions
+    mlflow              start/stop/restart mlflow
+
+optional arguments:
+  -h, --help            show this help message and exit
+</pre></div>
+</div>
+</div>
+<div class="section" id="manually-starting-the-tql-backend">
+<h1>Manually Starting the TQL Backend<a class="headerlink" href="#manually-starting-the-tql-backend" title="Permalink to this headline">¶</a></h1>
+<p>The TQL backend can be started at any time using the command <code class="docutils literal notranslate"><span class="pre">noumena</span> <span class="pre">start</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>(noumena-venv) jshmoe$ noumena start
+[noumena]: starting daedalus... 
+[noumena]: starting icarus... success
+------------------------------------------------------------------
+           Version: 20.1.16
+ Version Timestamp: 2021-07-21 17:34:23
+       Version Age: 6 days, 17 hours, 42 minutes, 59 seconds
+   Filesystem Root: /home/jshmoe/.noumena/files
+ Working Directory: /home/jshmoe/.noumena
+Configuration File: /home/jshmoe/.noumena/noumena_conf.yml
+       Api Gateway: http://localhost:9000
+    Service Status: Icarus: ONLINE, Daedalus: ONLINE
+    Service Uptime: 0 seconds
+------------------------------------------------------------------
+</pre></div>
+</div>
+<p>It is also automatically started any time the TQL package is imported in a Python script or Jupyter Notebook, if not already running.  Refer to the <span class="xref myst">configuration guide</span> for info on how to customize your TQL installation.</p>
+</div>
+<div class="section" id="installing-java">
+<h1>Installing Java:<a class="headerlink" href="#installing-java" title="Permalink to this headline">¶</a></h1>
+<p>To validate you have Java installed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ java -version
+# you should see something like this:
+openjdk version &quot;1.8.0_275&quot;
+</pre></div>
+</div>
+<p>In the case where Java is not 1.8, we need to see what versions of Java are available:</p>
+<p>On OSX:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ /usr/libexec/java_home -V 
+</pre></div>
+</div>
+<p>On Linux:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ update-alternatives --list java
+</pre></div>
+</div>
+<p>If you DO NOT see java 1.8.x or higher on this list, you need to install it.</p>
+<p>On OSX:
+The easiest way is via <a class="reference external" href="https://brew.sh/">Homebrew</a>.  See this <a class="reference external" href="https://stackoverflow.com/questions/26252591/mac-os-x-and-multiple-java-versions">link</a> on managing multiple java versions on OSX.<br />
+We recommend using <a class="reference external" href="https://github.com/AdoptOpenJDK/homebrew-openjdk">Adopt Open JDK 8</a>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ brew tap adoptopenjdk/openjdk 
+$ brew install --cask adoptopenjdk/openjdk/adoptopenjdk8
+# then re-run the java_home command to verify it installed correctly
+$ /usr/libexec/java_home -V 
+</pre></div>
+</div>
+<p>Finally, set the environment variable <code class="docutils literal notranslate"><span class="pre">JAVA_HOME</span></code> to the <code class="docutils literal notranslate"><span class="pre">Home</span></code> dir:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ export JAVA_HOME=&#39;/Library/Java/JavaVirtualMachines/adoptopenjdk-8.jdk/Contents/Home&#39;
+</pre></div>
+</div>
+</div>
+<div class="section" id="installing-snappy">
+<h1>Installing Snappy<a class="headerlink" href="#installing-snappy" title="Permalink to this headline">¶</a></h1>
+<p>The snappy compression library is utilized to write timelines and datasets in a space-efficient manner.  Installing the <code class="docutils literal notranslate"><span class="pre">python-snappy</span></code> module does <em>not</em> install snappy, only the python bindings.  Therefore we must first install it separately, if not already installed:</p>
+<p>On OSX:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ brew install snappy
+$ brew link snappy # sometimes this step is needed
+$ pip install python-snappy
+and continue with `./bin/dev-environment-setup.sh`
+</pre></div>
+</div>
+<p>On DBM-based Linux:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo apt-get install python3.7 python3.7-venv python3.7-dev
+$ CPPFLAGS=&quot;-I/usr/local/include -L/usr/local/lib&quot; pip install python-snappy
+</pre></div>
+</div>
+<p>On RPM-based Linux:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ sudo yum install libsnappy-devel or yum install csnappy-devel
+</pre></div>
+</div>
+</div>
+<div class="section" id="buidling-a-google-dataproc-for-tql">
+<h1>Buidling a Google DataProc for TQL:<a class="headerlink" href="#buidling-a-google-dataproc-for-tql" title="Permalink to this headline">¶</a></h1>
+<p>Setting up TQL on Google’s managed cloud computing service is identical to setting it up for Jupyter Notebook usage. Reference: https://cloud.google.com/dataproc/docs/tutorials/jupyter-notebook</p>
+<p>When creating a Google DataProc cluster from the web console, Make these changes to the configuration:</p>
+<ul class="simple">
+<li><p>Enter a custom cluster name</p></li>
+<li><p>Change Image Version to: 2.0 (Ubuntu 18.04 LTS, Hadoop 3.2, Spark 3.1)</p></li>
+<li><p>Check the Enable component gateway checkbox in the Components section</p></li>
+<li><p>Check the Jupyter Notebook checkbox in the Optional components section</p></li>
+</ul>
+<p>After going through the setup wizard, click the Create button and wait for the cluster to be created (~5 minutes)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span>
+</pre></div>
+</div>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        &#169; Copyright 2021, various.
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>

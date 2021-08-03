@@ -1,0 +1,71 @@
+# Overview
+
+## What is TQL?
+TQL, or **Timeline Query Language**, is a data processing engine for preparing time series data for machine learning applications.  Using a simple Python interface and custom DSL expression language, TQL makes it simple for a data scientist or engineer to write robust, scalable, production-ready ETLs to prepare data for model training.  TQL excels at efficently extracting complex [longtidunal](https://www.investopedia.com/terms/l/longitudinaldata.asp) features, and also provides a easy-to-use set of APIs to make deploying ML Models to production for batch or realtime scoring.  
+
+## Features:
+- Simple, intuitive Python query interface usable by any data scientst or engineer that can write SQL
+- Queries are translated directly to Java bytecode for execution for maximum performance
+- Extracting longitudinal and panel datasets from time series is data fast and easy
+- TQL's fast, in-memory query engine is optimized for interactive workflows in Jupyter Notebooks
+- TQL's distributed query engine effortlessly scales your queries to large workloads 
+- Direct support for batch and realtime scoring of trained ML models
+
+## Data Processing Model
+TQL first creates **timelines** from one or multiple time series sharing a common identity, such as user_id.  It then extracts dataframes by extracting attributes from the events, then further transforming those attributes into machine learning features using a custom DSL (domain-specific language).  
+![](https://lh5.googleusercontent.com/8DKADTmvm2395GHBPeMWepSgddW2hNjHkqtPLUx5To1z62wdNK3YxHhuMUdaXnz0oL9MHnspi8SzEE6SCoUhUGR1Xau39XY05GS5Gm4zvPjCUrZKfJX7TiX9ATyOV3-trIi1qQaKzgY)
+
+This data processing model is a bit different than traditional SQL, but is designed to make the most difficult parts of time-aggregated data transformations simple and easy to express by the data scientist, yet fast and performant in production.  To get the most out of TQL, we encourage you to read the [Key Concepts and Architecture](concepts) guide before diving into writing your first TQL queries.  
+
+
+## Installation
+
+### Obtaining a license key
+TQL is currently being offered for preview in a private beta.  Please click [here](#TODO) to request
+to be included in the Beta.
+
+### Prerequisites
+At a minimum, we recommend the following for compatibility with TQL:
+-   Python 3.6+ (get it [here](https://www.python.org/downloads/))
+-   Java 8+ (install instructions [here](https://github.com/noumena-ai/noumena/wiki/Noumena-Installation-Guide#installing-java-18))
+-   Snappy Compression Library (install instructions [here](#TODO))
+
+
+<div class="alert alert-block alert-info">
+<b>Tip:</b> We strongly recommend you use a python virtual environment manager to isolate the installation
+of TQL from your other Python applications.
+</div>
+
+### Installing
+Install Noumena using your package manager of choice, such as [pip](https://pip.pypa.io/en/stable/):
+```
+pip install noumena --extra-index-url=[https://[user]:[pw]@pip.nanigans.com]
+```  
+
+## Where To Next?
+
+### Programming Guides:
+```{toctree}
+   :maxdepth: 1
+
+   Overview <overview>
+   Key Concepts and Architecture <concepts>
+   Quick Start <quickstart>
+   Importing Data <importing-data>
+   Expression Language <expression-language>
+   Writing Queries <writing-queries>
+   Using Resultsets <resultsets>
+   User Defined Functions <user-defined-functions>
+   Configuration <configuration>
+   Training And Publishing Machine Learning Models <modeling>
+
+### API Docs
+    TODO
+```
+
+
+
+
+```python
+
+```
